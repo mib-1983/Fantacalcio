@@ -134,6 +134,15 @@
 
 </script>
 
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+            .then(() => console.log("Service Worker registrato"))
+            .catch(error => console.error("Errore Service Worker:", error));
+    });
+}
+</script>
 
 </body>
 
