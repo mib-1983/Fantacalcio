@@ -1,0 +1,987 @@
+body {
+    font-family: Roboto, Arial, sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    min-height: 100vh;
+}
+
+
+/* contenitore principale */
+.container {
+
+    width: 90%;
+    max-width: 380px;
+
+    margin: 30px auto;
+
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 20px;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+
+/* titolo */
+
+h1 {
+
+    text-align: center;
+
+    color: #1b5e20;
+
+    margin-bottom: 30px;
+
+    font-size: 32px;
+
+}
+
+
+/* etichette */
+
+label {
+
+    display: block;
+
+    font-weight: bold;
+
+    margin-top: 15px;
+
+    color: #333;
+
+}
+
+
+/* menu e caselle */
+
+select,
+input {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 12px;
+
+    margin-top: 6px;
+
+    border-radius: 10px;
+
+    border: 1px solid #ccc;
+
+    font-size: 16px;
+
+}
+
+
+/* campo squadra */
+
+#squadra {
+
+    background: #f5f5f5;
+
+}
+
+
+/* checkbox */
+
+.ricorda {
+
+    display: flex;
+
+    align-items: center;
+
+    margin-top: 20px;
+
+}
+
+
+.ricorda input {
+
+    width: auto;
+
+    margin-right: 10px;
+
+}
+
+
+/* pulsanti */
+
+button {
+
+    width: 100%;
+
+    padding: 14px;
+
+    margin-top: 20px;
+
+    border-radius: 12px;
+
+    border: none;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+
+/* entra */
+
+button:first-of-type {
+
+    background: #1b5e20;
+
+    color: white;
+
+}
+
+
+/* crea lega */
+
+button:last-of-type {
+
+    background: #e0e0e0;
+
+    color: #333;
+
+}
+
+.riga {
+    display: flex;
+    gap: 10px;
+}
+
+.campo {
+    width: 50%;
+}
+
+.campo input {
+    width: 100%;
+}
+
+.intestazionePartecipanti,
+.rigaPartecipante {
+
+    display: flex;
+    gap: 10px;
+
+}
+
+
+.intestazionePartecipanti div {
+
+    width: 50%;
+    font-weight: bold;
+
+}
+
+
+.rigaPartecipante input {
+
+    width: 50%;
+
+}
+
+.rigaPartecipante {
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+
+}
+
+
+.rigaPartecipante span {
+
+    width: 25px;
+    font-weight: bold;
+    text-align: center;
+
+}
+
+
+.rigaPartecipante input {
+
+    flex: 1;
+
+}
+
+.rigaSquadra {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+.scelta label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.scelta input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+.rigaCampo {
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+
+}
+
+
+.rigaCampo label {
+
+    width: 120px;
+
+}
+
+
+.rigaCampo input,
+.rigaCampo select {
+
+    flex: 1;
+
+}
+
+.giocatoreAsta {
+
+    text-align: center;
+    padding: 25px;
+    margin: 20px 0;
+    border-radius: 15px;
+
+}
+
+
+.giocatoreAsta h1 {
+
+    font-size: 32px;
+    margin-bottom: 20px;
+
+}
+
+
+.infoGiocatore {
+
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+
+}
+
+
+.infoGiocatore p {
+
+    margin: 0;
+
+}
+
+.tabellaRose {
+
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+
+}
+
+
+.colRuolo {
+
+    width:40px;
+
+}
+
+
+.colNome {
+
+    width:140px;
+
+}
+
+
+.colCosto {
+
+    width:45px;
+
+}
+
+
+.tabellaRose th,
+.tabellaRose td {
+
+    border:1px solid #ccc;
+    padding:8px;
+    text-align:center;
+    vertical-align:top;
+
+}
+
+
+.tabellaRose th {
+
+    background:#222;
+    color:white;
+
+}
+
+
+.tabellaRose .nomeGiocatore {
+
+    font-size:14px;
+    padding:3px 0;
+    text-align:left;
+    white-space:nowrap;
+
+}
+
+.tabellaGiocatoriLiberi {
+
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+
+}
+
+
+.tabellaGiocatoriLiberi th,
+.tabellaGiocatoriLiberi td {
+
+    border:1px solid #ccc;
+    padding:8px;
+    text-align:center;
+
+}
+
+
+.tabellaGiocatoriLiberi th {
+
+    background:#aaaaaa;
+    color:white;
+    font-weight:bold;
+
+}
+
+
+/* Ruolo */
+
+.tabellaGiocatoriLiberi th:nth-child(1),
+.tabellaGiocatoriLiberi td:nth-child(1) {
+
+    width:10%;
+
+}
+
+
+/* Nome giocatori */
+
+.tabellaGiocatoriLiberi td:nth-child(2) {
+
+    text-align:left;
+
+}
+
+
+/* Intestazione Nome */
+
+.tabellaGiocatoriLiberi th:nth-child(2) {
+
+    text-align:center;
+
+}
+
+
+/* Squadra */
+
+.tabellaGiocatoriLiberi th:nth-child(3),
+.tabellaGiocatoriLiberi td:nth-child(3) {
+
+    width:30%;
+
+}
+
+
+/* Quotazione */
+
+.tabellaGiocatoriLiberi th:nth-child(4),
+.tabellaGiocatoriLiberi td:nth-child(4) {
+
+    width:10%;
+
+}
+
+
+.filtroRuoli {
+
+    display:flex;
+    gap:15px;
+    align-items:center;
+    margin:10px 0;
+
+}
+
+
+.filtroRuoli label {
+
+    display:flex;
+    align-items:center;
+    gap:5px;
+    background:#f2f2f2;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+
+}
+
+
+.filtroRuoli input {
+
+    width:18px;
+    height:18px;
+
+}
+
+#boxNomeLiberi input {
+
+    width:220px;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    outline:none;
+
+}
+
+
+#boxNomeLiberi input:focus {
+
+    border-color:#222;
+
+}
+
+
+.filtroRicerca {
+
+    display:flex;
+    align-items:center;
+    margin:10px 0;
+
+}
+
+
+#boxNomeLiberi {
+    margin: 10px 0;
+    text-align: center;
+}
+
+
+#boxNomeLiberi input {
+
+    width: 80%;
+
+    max-width: 300px;
+
+    padding: 8px 12px;
+
+    font-size: 16px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 20px;
+
+    outline: none;
+
+    text-align: center;
+
+}
+
+
+#boxNomeLiberi input:focus {
+
+    border-color: #2196F3;
+
+    box-shadow: 0 0 5px rgba(33,150,243,0.5);
+
+}
+
+
+/* Tendine filtri tabella */
+
+.tabellaGiocatoriLiberi select {
+
+    height:22px;
+
+    font-size:12px;
+
+    padding:0 4px;
+
+    border-radius:8px;
+
+    border:1px solid #aaa;
+
+}
+
+
+
+.tabellaGiocatoriLiberi tr:nth-child(even) {
+
+    background:#eaeaea;
+
+}
+
+
+.tabellaGiocatoriLiberi tr:hover {
+
+    background:#e8f5e9;
+
+}
+
+.badgeRuolo {
+
+    display:inline-block;
+
+    width:24px;
+    height:24px;
+
+    line-height:24px;
+
+    border-radius:50%;
+
+    color:white;
+
+    font-weight:bold;
+
+    font-size:13px;
+
+}
+
+
+.badgeRuolo.P {
+
+    background:#43a047;
+
+}
+
+
+.badgeRuolo.D {
+
+    background:#1976d2;
+
+}
+
+
+.badgeRuolo.C {
+
+    background:#fb8c00;
+
+}
+
+
+.badgeRuolo.A {
+
+    background:#e53935;
+
+}
+
+
+.navigazione {
+
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin:10px 0;
+
+}
+
+
+.navigazione button {
+
+    flex:1;
+    max-width:160px;
+
+    background:#90caf9;
+    color:#333;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+
+}
+
+
+.container button {
+
+    margin-top:10px;
+    margin-bottom:10px;
+
+}
+
+.boxAssegna {
+
+    margin-top:25px;
+    margin-bottom:10px;
+
+}
+
+
+.boxAssegna button {
+
+    background:#256b2a;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-weight:bold;
+    font-size:20px;
+    padding:12px 25px;
+
+}
+
+#ruoloGiocatore {
+
+    margin-bottom:0;
+    line-height:1;
+
+}
+
+
+#nomeGiocatore {
+
+    margin:0;
+    font-size:50px;
+    line-height:1.1;
+    height:85px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+
+}
+
+.infoGiocatore {
+
+    font-size:18px;
+    margin-top: 30px;
+
+
+}
+
+.giocatoreAsta {
+
+    margin-top:0;
+
+}
+
+
+.titoloAsta {
+
+    color:#1565c0;
+    font-size:30px;
+    text-align:center;
+
+}
+
+
+#prezzoFinale {
+
+    width:100px;
+    height:45px;
+    font-size:24px;
+    font-weight:bold;
+    text-align:center;
+    border-radius:8px;
+
+
+}
+
+.rigaCampo {
+
+    margin-bottom:15px;
+
+}
+
+
+.rigaCampo label {
+
+    font-size:20px;
+    font-weight:bold;
+
+}
+
+.azioniExtra {
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:10px;
+
+    margin-top:10px;
+
+}
+
+
+.azioniExtra button {
+
+    flex:1;
+    max-width:160px;
+    background:#90a4ae;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+
+}
+
+.costoGiocatore {
+
+    font-weight:bold;
+    color:#256b2a;
+    text-align:center;
+
+}
+
+.tabellaGiocatoriLiberi .nomeGiocatore {
+
+    font-size:14px;
+    padding:3px 0;
+    text-align:left;
+}
+
+.tabellaRose th {
+
+    background:#bdbdbd;
+    color:#333;
+    font-weight:bold;
+    font-size:16px;
+
+}
+
+.tabellaRose tr:nth-child(2) td {
+
+    background:#f5f5f5;
+    font-weight:bold;
+    font-size:18px;
+
+}
+
+
+.postoVuoto {
+
+    color:#bbb;
+    height:22px;
+
+}
+
+.tabellaRose td {
+
+    border-bottom:1px solid #ccc;
+
+}
+
+
+
+.menu-navigazione{
+
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+
+}
+
+.menu-navigazione button{
+
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+
+}
+
+.menu-pagine{
+
+    display: none;
+
+    position: absolute;
+    top: 45px;
+    left: 0;
+
+    background: white;
+
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    min-width: 160px;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+
+}
+
+.menu-pagine.mostra{
+
+    display: block;
+
+}
+
+.menu-pagine a{
+
+    display: block;
+
+    padding: 12px 15px;
+
+    text-decoration: none;
+
+    color: black;
+
+}
+
+.menu-pagine a:hover{
+
+    background: #f0f0f0;
+
+}
+
+
+.menu-navigazione{
+    position: relative;
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.menu-navigazione button{
+    padding: 8px 14px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.menu-pagine{
+    display: none;
+    position: absolute;
+    top: 42px;
+    left: 0;
+    z-index: 1000;
+
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    min-width: 160px;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.menu-pagine.mostra{
+    display: block;
+}
+
+.menu-pagine a{
+    display: block;
+    padding: 12px 15px;
+
+    text-decoration: none;
+    color: black;
+}
+
+.menu-pagine a:hover{
+    background: #f0f0f0;
+}
+
+
+.giocatoreFuoriLista {
+    color: red;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+
+/* =========================================
+   POPUP SOSTITUZIONE
+========================================= */
+
+.popupSostituzione {
+
+    display: none;
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0,0,0,0.6);
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+
+}
+
+
+.contenutoPopup {
+
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 12px;
+
+    width: 90%;
+    max-width: 400px;
+
+    text-align: center;
+
+}
+
+
+.contenutoPopup h3 {
+
+    margin-top: 0;
+
+}
+
+
+#listaSostituzione button {
+
+    display: block;
+
+    width: 100%;
+
+    margin: 8px 0;
+
+    padding: 12px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+}
+
+.riquadroMercatoRiparazione {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+}
+
+.giocatoreSelezionatoScambio {
+    background-color: orange !important;
+    color: black !important;
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Rose</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>📋 Rose Squadre</h1>
+
+
+<button
+    id="btnScambia"
+    onclick="attivaModalitaScambio()"
+    style="
+        background-color: #388E3C;
+        color: white;
+    "
+>
+    🔄 SCAMBIA
+</button>
+
+<button
+    id="btnSvincola"
+    onclick="attivaModalitaSvincolo()"
+    style="
+        background-color: #388E3C;
+        color: white;
+    "
+>
+    🔓 SVINCOLA E SOSTITUISCI
+</button>
+
+<div id="contenitoreRose"></div>
+
+
+</div>
+
+
+
+<script src="app.js"></script>
+
+
+
+<script>
+
+caricaRose();
+
+</script>
+
+
+<script src="menu.js"></script>
+
+</body>
+
+</html>

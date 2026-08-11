@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>FantaManager</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <h1>⚽ FantaManager</h1>
+
+
+    <!--=========================================
+        LEGA
+    =========================================-->
+
+    <label for="lega">
+        Lega
+    </label>
+
+
+    <select id="lega">
+
+        <option value="">
+            Seleziona lega
+        </option>
+
+    </select>
+
+
+    <!--=========================================
+        UTENTE
+    =========================================-->
+
+    <label for="utente">
+        Utente
+    </label>
+
+
+    <select id="utente">
+
+        <option value="">
+            Seleziona utente
+        </option>
+
+    </select>
+
+
+    <!--=========================================
+        SQUADRA
+    =========================================-->
+
+    <label for="squadra">
+        Squadra
+    </label>
+
+
+    <input
+        id="squadra"
+        readonly>
+
+
+    <!--=========================================
+        RICORDA ACCESSO
+    =========================================-->
+
+    <div class="ricorda">
+
+        <input
+            type="checkbox"
+            id="ricorda">
+
+        <label for="ricorda">
+            Ricorda accesso
+        </label>
+
+    </div>
+
+
+    <!--=========================================
+        ENTRA
+    =========================================-->
+
+    <button onclick="entra()">
+
+        ENTRA
+
+    </button>
+
+
+    <!--=========================================
+        CREA LEGA
+    =========================================-->
+
+    <button
+        onclick="window.location.href='crea-lega.html'">
+
+        CREA LEGA
+
+    </button>
+
+
+</div>
+
+
+<!--=========================================
+    JAVASCRIPT
+=========================================-->
+
+<script src="app.js"></script>
+
+
+<script>
+
+    caricaLeghe();
+
+</script>
+
+
+</body>
+
+</html>

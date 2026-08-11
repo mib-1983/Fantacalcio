@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Asta Live</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1 class="titoloAsta">🔨 Asta Live</h1>
+
+
+<h2 id="ruoloGiocatore">
+</h2>
+
+
+<div class="giocatoreAsta">
+
+
+<h1 id="nomeGiocatore">
+</h1>
+
+
+<div class="infoGiocatore">
+
+<p>
+Squadra:
+<b id="squadraGiocatore"></b>
+</p>
+
+
+<p>
+Quotazione:
+<b id="quotazioneGiocatore"></b>
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="rigaCampo">
+
+<label>Acquistato da</label>
+
+<select id="acquirente" onchange="cambioAcquirente()">
+</select>
+
+</div>
+
+
+
+<div class="rigaCampo">
+
+<label>Squadra</label>
+
+<input 
+type="text"
+id="squadraAcquirente"
+readonly>
+
+</div>
+
+
+
+<div class="rigaCampo">
+
+<label>Prezzo finale</label>
+
+<input 
+type="number"
+id="prezzoFinale"
+value="0"
+min="0">
+
+</div>
+
+
+<div class="boxAssegna">
+
+<button onclick="assegnaGiocatore()">
+🪙 ASSEGNA
+</button>
+
+</div>
+
+
+
+<div class="navigazione">
+
+    <button onclick="precedenteGiocatore()">
+    ⬅ Precedente
+    </button>
+
+
+    <button onclick="successivoGiocatore()">
+    Successivo ➡
+    </button>
+
+</div>
+
+
+<div class="azioniExtra">
+
+    <button onclick="location.href='giocatori-liberi.html'">
+    ⚽ Svincolati
+    </button>
+
+
+    <button onclick="location.href='rose.html'">
+    👥 Rose
+    </button>
+
+</div>
+
+
+
+</div>
+
+
+
+<script src="app.js"></script>
+
+
+<script>
+
+caricaAcquirenti();
+
+caricaPrimoGiocatore();
+
+</script>
+
+
+<script src="menu.js"></script>
+
+</body>
+
+</html>
