@@ -1,10 +1,10 @@
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function () {
 
     const container =
         document.querySelector(".container");
 
 
-    if(!container){
+    if (!container) {
         return;
     }
 
@@ -19,84 +19,44 @@ document.addEventListener("DOMContentLoaded", function(){
 
     menu.innerHTML = `
 
-        <div style="
-            display:flex;
-            align-items:center;
-            width:100%;
-            gap:10px;
-        ">
+        <!-- ================================
+             MENU SUPERIORE
+        ================================= -->
+
+        <div class="menu-superiore">
 
             <button
-                id="bottoneIndietro"
                 onclick="history.back()"
-                style="
-                    width:15%;
-                    background:transparent;
-                    border:none;
-                    padding:0;
-                    margin:0;
-                    color:#000;
-                    font-size:35px;
-                    cursor:pointer;
-                    box-shadow:none;
-                    text-align:left;
-                    transform:scaleX(1.5);
-                "
+                title="Indietro"
             >
                 ⬅️
-            </button>
+                <span>Indietro</span>
+                </button>
+
 
             <button
-                id="bottoneMenu"
-                style="
-                    width:90%;
-                "
+                onclick="location.href='lega.html'"
             >
-                ☰ Menu
+                🏠
+                <span>Home</span>
             </button>
 
-        </div>
 
-
-        <div id="menuPagine" class="menu-pagine">
-
-            <a href="lega.html">
-                🏠 Home
-            </a>
-
-
-            <a href="asta.html">
-                ⚙️ Impostazioni Asta
-            </a>
-
-
-            <a href="asta-live.html">
-                🔨 Asta Live
-            </a>
-
-
-            <a href="giocatori-liberi.html">
-                ⚽ Svincolati
-            </a>
-
-
-            <a
-                href="rose.html"
-                onclick="localStorage.removeItem('rosaDaVisualizzare');"
+            <button
+                onclick="location.href='index.html'"
             >
-                📋 Rose
-            </a>
-
-
-            <a href="index.html">
-                🚪 Esci
-            </a>
+                🚪
+                <span>Esci</span>
+            </button>
 
         </div>
 
     `;
 
-     
+
+    /* ================================
+       INSERISCE IL MENU IN ALTO
+    ================================= */
 
     container.insertBefore(
         menu,
@@ -104,49 +64,70 @@ document.addEventListener("DOMContentLoaded", function(){
     );
 
 
-    const bottone =
-        document.getElementById(
-            "bottoneMenu"
-        );
+    /* ================================
+       CREA LA BARRA INFERIORE
+    ================================= */
+
+    const barra =
+        document.createElement("div");
 
 
-    const menuPagine =
-        document.getElementById(
-            "menuPagine"
-        );
+    barra.className =
+        "barra-fondo";
 
 
-    // APRE / CHIUDE CON IL PULSANTE
-    bottone.addEventListener(
-        "click",
-        function(e){
+    barra.innerHTML = `
 
-            e.stopPropagation();
-
-            menuPagine.classList.toggle(
-                "mostra"
-            );
-
-        }
-    );
+        <button
+            onclick="apriMiaRosa()"
+        >
+            <span class="icona">👥</span>
+            <span>La mia rosa</span>
+        </button>
 
 
-    // CLIC FUORI DAL MENU = CHIUDI
-    document.addEventListener(
-        "click",
-        function(e){
 
-            if (
-                !menu.contains(e.target)
-            ) {
+        <button
+            onclick="apriTutteLeRose()"
+        >
+            <span class="icona">📋</span>
+            <span>Rose</span>
+        </button>
 
-                menuPagine.classList.remove(
-                    "mostra"
-                );
+        
+        <button
+            onclick="location.href='giocatori-liberi.html'"
+        >
+            <span class="icona">⚽</span>
+            <span>Svincolati</span>
+        </button>
 
-            }
 
-        }
+        <button
+               onclick="location.href='asta.html'"
+           >
+            ⚙️
+            <span>Imposta Asta</span>
+        </button>
+
+
+        <button
+            onclick="location.href='asta-live.html'"
+        >
+            <span class="icona">🔨</span>
+            <span>Asta</span>
+        </button>
+
+    `;
+
+
+    /* ================================
+       INSERISCE LA BARRA
+       DIRETTAMENTE NEL CONTAINER
+    ================================= */
+
+    container.appendChild(
+        barra
     );
 
 });

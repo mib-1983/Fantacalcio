@@ -136,7 +136,6 @@ button:first-of-type {
 
     background: #1b5e20;
 
-    color: white;
 
 }
 
@@ -213,11 +212,26 @@ button:last-of-type {
 }
 
 .rigaSquadra {
-
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
 
+.rigaSquadra span:nth-child(1) {
+    flex: 1;
+    text-align: left;
+}
+
+.rigaSquadra span:nth-child(2) {
+    flex: 1;
+    text-align: left;
+}
+
+.rigaSquadra span:nth-child(3) {
+    flex: 0 0 90px;
+    text-align: right;
 }
 
 .scelta label {
@@ -291,30 +305,69 @@ button:last-of-type {
 }
 
 .tabellaRose {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
 
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed;
+.contenitoreTabellaRose {
+    width: 100%;
+    max-width: 100%;
+    
+    height: calc(100vh - 300px);
+    min-height: 200px;
 
+    overflow-x: auto;
+    overflow-y: auto;
+
+    box-sizing: border-box;
+}
+
+/* =========================================
+   INTESTAZIONE TABELLA ROSE FISSA
+   ========================================= */
+
+.tabellaRose tr:first-child th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #bdbdbd;
 }
 
 
-.colRuolo {
+/* =========================================
+   RIGA CREDITI FISSA
+   ========================================= */
 
+.tabellaRose tr:nth-child(2) td {
+    position: sticky;
+    top: 34px;
+    z-index: 4;
+    background: #f5f5f5;
+}
+
+.container {
+    overflow: hidden;
+}
+
+.colRuolo {
     width:40px;
 
 }
 
 
 .colNome {
-
-    width:140px;
+    width:125px;
 
 }
 
 
-.colCosto {
+.colSquadra {
+    width: 65px;
+}
 
+.colCosto {
     width:45px;
 
 }
@@ -347,6 +400,12 @@ button:last-of-type {
     white-space:nowrap;
 
 }
+
+.tabellaRose td:nth-child(3) {
+    font-size: 11px;
+    vertical-align: middle;
+}
+
 
 .tabellaGiocatoriLiberi {
 
@@ -755,7 +814,7 @@ button:last-of-type {
 
 .tabellaGiocatoriLiberi .nomeGiocatore {
 
-    font-size:14px;
+    font-size:16px;
     padding:3px 0;
     text-align:left;
 }
@@ -984,4 +1043,205 @@ button:last-of-type {
 .giocatoreSelezionatoScambio {
     background-color: orange !important;
     color: black !important;
+}
+
+.bannerSostituzione {
+    background: #fff3cd;
+    border: 1px solid #f0ad4e;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.bannerSostituzione button {
+    width: auto;
+    margin-top: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    background: #c0392b;
+    color: white;
+}
+
+/* Aumenta dimensione e spaziatura delle righe partecipanti */
+#listaUtenti,
+#listaUtenti > * {
+  font-size: 1.05rem !important;
+  line-height: 1.8 !important;
+}
+
+/* Se nel markup ci sono elementi interni con testo della squadra,
+   rendili un po' più grandi e in grassetto */
+#listaUtenti .nome-squadra,
+#listaUtenti .team-name,
+#listaUtenti .squadra,
+#listaUtenti .label-squadra,
+#listaUtenti span {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+.header-partecipanti-inline h2,
+.header-partecipanti-inline .inline-credits {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 8px 0 0;
+}
+
+
+/* =========================================
+   BARRA INFERIORE
+========================================= */
+
+.barra-fondo {
+
+    position: sticky;
+
+    bottom: 0;
+
+    display: flex;
+
+    flex-direction: row;
+
+    justify-content: space-around;
+
+    align-items: center;
+
+    width: 100%;
+
+    gap: 6px;
+
+    padding: 6px 0;
+
+    background: white;
+
+    border-top: 1px solid #ccc;
+
+    z-index: 1000;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =========================================
+   PULSANTI
+========================================= */
+
+.barra-fondo button {
+
+    width: 65px;
+
+    height: 65px;
+
+    padding: 4px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #eeeeee;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 2px;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+}
+
+
+/* =========================================
+   ICONE
+========================================= */
+
+.barra-fondo .icona {
+
+    font-size: 24px;
+
+    line-height: 25px;
+
+}
+
+
+/* =========================================
+   PULSANTI
+========================================= */
+
+.barra-fondo button {
+
+    width: 65px;
+    height: 65px;
+    padding: 4px;
+    border: none;
+    border-radius: 8px;
+    background: #eeeeee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 12px;
+    cursor: pointer;
+
+}
+
+
+/* =========================================
+   ICONE
+========================================= */
+
+.barra-fondo .icona {
+
+    font-size: 24px;
+    line-height: 25px;
+
+}
+
+/* =========================================
+   PULSANTI MENU SUPERIORE
+   ========================================= */
+
+.menu-superiore {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.menu-superiore button {
+    width: 75px;
+    height: 55px;
+    padding: 5px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #c4c2c2;
+    color: #000;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.menu-superiore button span {
+    font-size: 12px;
 }

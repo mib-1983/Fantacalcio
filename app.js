@@ -17,6 +17,42 @@ const STORAGE = {
 };
 
 
+// ==============================
+// Helpers per localStorage sicuro
+// ==============================
+function safeGetJSON(key) {
+    try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : null;
+    } catch (e) {
+        console.warn("Errore parsing localStorage key:", key, e);
+        // rimuovo la chiave corrotta per evitare crash ricorrenti
+        localStorage.removeItem(key);
+        return null;
+    }
+}
+
+function safeSetJSON(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+        console.error("Errore scrittura localStorage key:", key, e);
+    }
+}
+
+// ==============================
+// HTML escaping helper
+// ==============================
+function escapeHTML(str) {
+    return String(str === undefined || str === null ? "" : str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+
 let ruoloFiltroLiberi = [];
 let squadraFiltroLiberi = [];
 let nomeFiltroLiberi = "";
@@ -145,27 +181,22 @@ function salvaLega() {
     //=========================================
 
     let legheSalvate =
-        JSON.parse(
-            localStorage.getItem("legheSalvate")
-        ) || [];
+        safeGetJSON("legheSalvate") || [];
 
 
     legheSalvate.push(lega);
 
 
-    localStorage.setItem(
-        "legheSalvate",
-        JSON.stringify(legheSalvate)
-    );
+    safeSetJSON("legheSalvate", legheSalvate);
 
 
     //=========================================
     // RENDE QUESTA LA LEGA ATTIVA
     //=========================================
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.LEGA,
-        JSON.stringify(lega)
+        lega
     );
 
 
@@ -179,70 +210,6 @@ function salvaLega() {
 
 }
 
-
-//==================================================
-// PAGINA LEGA
-//==================================================
-
-function caricaLega() {
-
-    let datiLega =
-        localStorage.getItem(STORAGE.LEGA);
-
-
-    if (!datiLega) {
-
-        return;
-
-    }
-
-
-    let lega =
-        JSON.parse(datiLega);
-
-
-    document.getElementById("nomeLega").innerHTML =
-        lega.nomeLega;
-
-
-    document.getElementById("crediti").innerHTML =
-        "Crediti iniziali: " + lega.crediti;
-
-
-    let lista =
-        document.getElementById("listaUtenti");
-
-
-    lista.innerHTML = "";
-
-
-    lega.partecipanti.forEach(utente => {
-
-        lista.innerHTML += `
-
-        <div class="card rigaSquadra">
-
-            <span>
-            👤 ${utente.nomeUtente}
-            </span>
-
-            <span>
-            🏟 ${utente.nomeSquadra}
-            </span>
-
-            <span>
-            💰 ${utente.crediti}
-            </span>
-
-        </div>
-
-        `;
-
-    });
-
-}
-
-
 //==================================================
 // ASTA - CARICAMENTO ACQUIRENTI
 //==================================================
@@ -250,9 +217,7 @@ function caricaLega() {
 function caricaAcquirenti() {
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(STORAGE.LEGA)
-        );
+        safeGetJSON(STORAGE.LEGA);
 
 
     if (!lega) {
@@ -319,9 +284,7 @@ function mostraSquadra() {
 
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(STORAGE.LEGA)
-        );
+        safeGetJSON(STORAGE.LEGA);
 
 
     if (!lega) {
@@ -373,20 +336,13 @@ function cambioAcquirente() {
 // IMPORTAZIONE GIOCATORI EXCEL
 //==================================================
 
-function caricaGiocatoriExcel() {
+//==================================================
+// LETTURA FILE EXCEL GIOCATORI
+// (usata sia per il caricamento iniziale
+// che per il mercato di riparazione)
+//==================================================
 
-    let file =
-        document.getElementById("fileGiocatori").files[0];
-
-
-    if (!file) {
-
-        alert("Selezionare un file Excel");
-
-        return;
-
-    }
-
+function leggiExcelGiocatori(file, callback) {
 
     let lettore =
         new FileReader();
@@ -454,9 +410,36 @@ function caricaGiocatoriExcel() {
         });
 
 
-        localStorage.setItem(
+        callback(giocatori);
+
+    };
+
+
+    lettore.readAsArrayBuffer(file);
+
+}
+
+
+function caricaGiocatoriExcel() {
+
+    let file =
+        document.getElementById("fileGiocatori").files[0];
+
+
+    if (!file) {
+
+        alert("Selezionare un file Excel");
+
+        return;
+
+    }
+
+
+    leggiExcelGiocatori(file, function(giocatori) {
+
+        safeSetJSON(
             STORAGE.GIOCATORI,
-            JSON.stringify(giocatori)
+            giocatori
         );
 
 
@@ -466,10 +449,7 @@ function caricaGiocatoriExcel() {
             " giocatori"
         );
 
-    };
-
-
-    lettore.readAsArrayBuffer(file);
+    });
 
 }
 
@@ -517,15 +497,11 @@ function shuffle(array) {
 function caricaPrimoGiocatore() {
 
     let datiAsta =
-        JSON.parse(
-            localStorage.getItem(STORAGE.ASTA)
-        );
+        safeGetJSON(STORAGE.ASTA);
 
 
     let giocatori =
-        JSON.parse(
-            localStorage.getItem(STORAGE.GIOCATORI)
-        );
+        safeGetJSON(STORAGE.GIOCATORI);
 
 
     if (!datiAsta || !giocatori) {
@@ -652,10 +628,8 @@ function salvaGiocatoreCorrente() {
 
 
     let asta =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.ASTA
-            )
+        safeGetJSON(
+            STORAGE.ASTA
         );
 
 
@@ -677,12 +651,71 @@ function salvaGiocatoreCorrente() {
     };
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.ASTA,
-        JSON.stringify(asta)
+        asta
     );
 
 }
+
+//==================================================
+// SEGNA IL RUOLO CORRENTE COME TERMINATO
+// (usata sia con avviso che senza)
+//==================================================
+
+function segnaRuoloTerminato() {
+
+    if (
+        indiceCorrente !=
+        listaGiocatoriAsta.length - 1
+    ) {
+
+        return null;
+
+    }
+
+
+    let asta =
+        safeGetJSON(STORAGE.ASTA);
+
+
+    if (!asta) {
+
+        return null;
+
+    }
+
+
+    if (!asta.ruoliTerminati) {
+
+        asta.ruoliTerminati = [];
+
+    }
+
+
+    if (
+        !asta.ruoliTerminati.includes(
+            asta.ruolo
+        )
+    ) {
+
+        asta.ruoliTerminati.push(
+            asta.ruolo
+        );
+
+    }
+
+
+    safeSetJSON(
+        STORAGE.ASTA,
+        asta
+    );
+
+
+    return asta;
+
+}
+
 
 //==================================================
 // CONTROLLO FINE ASTA DEL RUOLO
@@ -690,49 +723,11 @@ function salvaGiocatoreCorrente() {
 
 function controllaFineAstaRuolo() {
 
-    if (
-        indiceCorrente ==
-        listaGiocatoriAsta.length - 1
-    ) {
-
-        let asta =
-            JSON.parse(
-                localStorage.getItem(STORAGE.ASTA)
-            );
+    let asta =
+        segnaRuoloTerminato();
 
 
-        if (!asta) {
-
-            return;
-
-        }
-
-
-        if (!asta.ruoliTerminati) {
-
-            asta.ruoliTerminati = [];
-
-        }
-
-
-        if (
-            !asta.ruoliTerminati.includes(
-                asta.ruolo
-            )
-        ) {
-
-            asta.ruoliTerminati.push(
-                asta.ruolo
-            );
-
-        }
-
-
-        localStorage.setItem(
-            STORAGE.ASTA,
-            JSON.stringify(asta)
-        );
-
+    if (asta) {
 
         alert(
             "Asta terminata per il ruolo: "
@@ -877,50 +872,7 @@ function successivoGiocatore() {
     }
     else {
 
-        let asta =
-            JSON.parse(
-                localStorage.getItem(STORAGE.ASTA)
-            );
-
-
-        if (!asta) {
-
-            return;
-
-        }
-
-
-        if (!asta.ruoliTerminati) {
-
-            asta.ruoliTerminati = [];
-
-        }
-
-
-        if (
-            !asta.ruoliTerminati.includes(
-                asta.ruolo
-            )
-        ) {
-
-            asta.ruoliTerminati.push(
-                asta.ruolo
-            );
-
-        }
-
-
-        localStorage.setItem(
-            STORAGE.ASTA,
-            JSON.stringify(asta)
-        );
-
-
-        alert(
-            "Asta terminata per il ruolo: " +
-            asta.ruolo
-        );
-
+        controllaFineAstaRuolo();
 
         window.location.href =
             "asta.html";
@@ -944,6 +896,38 @@ function precedenteGiocatore() {
 
 }
 
+
+function aggiornaLegaSalvata(lega) {
+
+
+    let legheSalvate =
+        safeGetJSON("legheSalvate") || [];
+
+
+    let indice =
+        legheSalvate.findIndex(
+            l =>
+                l.nomeLega ==
+                lega.nomeLega
+        );
+
+
+    if (indice != -1) {
+
+        legheSalvate[indice] =
+            JSON.parse(
+                JSON.stringify(lega)
+            );
+
+    }
+
+
+    safeSetJSON(
+        "legheSalvate",
+        legheSalvate
+    );
+
+}
 
 //==================================================
 // ASSEGNAZIONE GIOCATORE
@@ -979,9 +963,7 @@ function assegnaGiocatore() {
 
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(STORAGE.LEGA)
-        );
+        safeGetJSON(STORAGE.LEGA);
 
 
     if (!lega) {
@@ -1032,10 +1014,8 @@ function assegnaGiocatore() {
     //=========================================
 
     let tuttiGiocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
+        safeGetJSON(
+            STORAGE.GIOCATORI
         ) || [];
 
 
@@ -1052,10 +1032,12 @@ function assegnaGiocatore() {
     // SE GIÀ ACQUISTATO
     // TROVA LA VECCHIA SQUADRA
     //=========================================
+    // CORREZIONE: dichiaro vecchiaSquadra nello scope della funzione
+    let vecchiaSquadra = null;
 
     if (giocatoreGiaAcquistato) {
 
-        let vecchiaSquadra =
+        vecchiaSquadra =
             lega.partecipanti.find(
                 p =>
                     p.nomeUtente ==
@@ -1191,6 +1173,7 @@ function assegnaGiocatore() {
 
         if (!eraNellaStessaSquadra) {
 
+            // Combined confirm message (replaces previous separate confirm + alert)
             let conferma =
                 confirm(
                     "Hai terminato i posti per il ruolo " +
@@ -1198,7 +1181,8 @@ function assegnaGiocatore() {
                     ".\n\n" +
                     "Vuoi acquistare comunque il giocatore " +
                     giocatore.nome +
-                    " e scegliere chi sostituire?"
+                    " e scegliere chi sostituire?\n\n" +
+                    "Se confermi verrai reindirizzato alle rose per selezionare il giocatore da sostituire."
                 );
 
 
@@ -1210,9 +1194,6 @@ function assegnaGiocatore() {
                     giocatoreGiaAcquistato &&
                     vecchiaSquadra
                 ) {
-
-                    vecchiaSquadra.crediti +=
-                        0;
 
                     vecchiaSquadra.rosa.push({
 
@@ -1250,10 +1231,8 @@ function assegnaGiocatore() {
             //=========================================
 
             let asta =
-                JSON.parse(
-                    localStorage.getItem(
-                        STORAGE.ASTA
-                    )
+                safeGetJSON(
+                    STORAGE.ASTA
                 ) || {};
 
 
@@ -1283,9 +1262,9 @@ function assegnaGiocatore() {
             };
 
 
-            localStorage.setItem(
+            safeSetJSON(
                 STORAGE.ASTA,
-                JSON.stringify(asta)
+                asta
             );
 
 
@@ -1326,21 +1305,15 @@ function assegnaGiocatore() {
             }
 
 
-            localStorage.setItem(
+            safeSetJSON(
                 STORAGE.LEGA,
-                JSON.stringify(
-                    lega
-                )
+                lega
             );
 
+            aggiornaLegaSalvata(lega);
 
-            alert(
-                "Giocatore acquistato.\n\n" +
-                "Ora clicca nella rosa sul giocatore " +
-                "che vuoi sostituire."
-            );
-
-
+            // NOTE: il vecchio alert è stato rimosso, la conferma precedente ora contiene tutte le informazioni.
+            // Si reindirizza direttamente alle rose per selezionare il giocatore da sostituire.
             window.location.href =
                 "rose.html";
 
@@ -1406,12 +1379,12 @@ function assegnaGiocatore() {
     // SALVA LEGA
     //=========================================
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.LEGA,
-        JSON.stringify(
-            lega
-        )
+        lega
     );
+
+    aggiornaLegaSalvata(lega);
 
 
     //=========================================
@@ -1436,11 +1409,9 @@ function assegnaGiocatore() {
     }
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.GIOCATORI,
-        JSON.stringify(
-            tuttiGiocatori
-        )
+        tuttiGiocatori
     );
 
 
@@ -1453,54 +1424,7 @@ function assegnaGiocatore() {
     // FINE ASTA
     //=========================================
 
-    if (
-        indiceCorrente ==
-        listaGiocatoriAsta.length - 1
-    ) {
-
-        let asta =
-            JSON.parse(
-                localStorage.getItem(
-                    STORAGE.ASTA
-                )
-            );
-
-
-        if (asta) {
-
-            if (
-                !asta.ruoliTerminati
-            ) {
-
-                asta.ruoliTerminati =
-                    [];
-
-            }
-
-
-            if (
-                !asta.ruoliTerminati.includes(
-                    asta.ruolo
-                )
-            ) {
-
-                asta.ruoliTerminati.push(
-                    asta.ruolo
-                );
-
-            }
-
-
-            localStorage.setItem(
-                STORAGE.ASTA,
-                JSON.stringify(
-                    asta
-                )
-            );
-
-        }
-
-    }
+    segnaRuoloTerminato();
 
 
     mostraGiocatore();
@@ -1518,8 +1442,6 @@ function assegnaGiocatore() {
     );
 
 }
-
-
 
 
 //==================================================
@@ -1553,10 +1475,8 @@ function annullaAssegnazione() {
 
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
+        safeGetJSON(
+            STORAGE.LEGA
         );
 
 
@@ -1601,10 +1521,8 @@ function annullaAssegnazione() {
 
 
     let tuttiGiocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
+        safeGetJSON(
+            STORAGE.GIOCATORI
         ) || [];
 
 
@@ -1626,18 +1544,21 @@ function annullaAssegnazione() {
     }
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.GIOCATORI,
-        JSON.stringify(
-            tuttiGiocatori
-        )
+        tuttiGiocatori
     );
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.LEGA,
-        JSON.stringify(lega)
+        lega
     );
+
+
+    // Senza questo l'annullo si perde
+    // rientrando dal login
+    aggiornaLegaSalvata(lega);
 
 
     document.getElementById(
@@ -1659,8 +1580,144 @@ function annullaAssegnazione() {
 
 
 //==================================================
-// CARICA ROSE
+// BANNER SOSTITUZIONE IN ATTESA
 //==================================================
+
+function mostraBannerSostituzione() {
+
+    let banner =
+        document.getElementById(
+            "bannerSostituzione"
+        );
+
+
+    let asta =
+        safeGetJSON(
+            STORAGE.ASTA
+        );
+
+
+    let sostituzione =
+        asta
+            ? asta.sostituzioneInAttesa
+            : null;
+
+
+    //=========================================
+    // NESSUNA SOSTITUZIONE IN ATTESA
+    // RIMUOVE IL BANNER SE PRESENTE
+    //=========================================
+
+    if (!sostituzione) {
+
+        if (banner) {
+
+            banner.remove();
+
+        }
+
+        return;
+
+    }
+
+
+    //=========================================
+    // CREA IL BANNER SE NON C'È ANCORA
+    //=========================================
+
+    if (!banner) {
+
+        banner =
+            document.createElement("div");
+
+        banner.id =
+            "bannerSostituzione";
+
+        banner.className =
+            "bannerSostituzione";
+
+
+        let contenitore =
+            document.getElementById(
+                "contenitoreRose"
+            );
+
+        if (contenitore && contenitore.parentNode) {
+            contenitore.parentNode.insertBefore(
+                banner,
+                contenitore
+            );
+        }
+
+    }
+
+    // Uso escapeHTML per evitare XSS
+    banner.innerHTML = `
+
+        ⚠️ Sostituzione in attesa per
+        <b>${escapeHTML(sostituzione.nomeSquadra)}</b>:
+        clicca nella sua rosa il giocatore
+        da sostituire con
+        <b>${escapeHTML(sostituzione.nomeNuovo)}</b>
+        (${escapeHTML(sostituzione.prezzoNuovo) } crediti).
+
+        <button
+            type="button"
+            id="btnAnnullaSostituzione"
+        >
+            ❌ Annulla sostituzione
+        </button>
+
+    `;
+
+    const btnAnnulla = document.getElementById("btnAnnullaSostituzione");
+    if (btnAnnulla) {
+        btnAnnulla.addEventListener("click", annullaSostituzioneInAttesa);
+    }
+
+}
+
+
+function annullaSostituzioneInAttesa() {
+
+    let conferma =
+        confirm(
+            "Annullare la sostituzione in attesa?"
+        );
+
+
+    if (!conferma) {
+
+        return;
+
+    }
+
+
+    let asta =
+        safeGetJSON(
+            STORAGE.ASTA
+        );
+
+
+    if (!asta) {
+
+        return;
+
+    }
+
+
+    delete asta.sostituzioneInAttesa;
+
+
+    safeSetJSON(
+        STORAGE.ASTA,
+        asta
+    );
+
+
+    caricaRose();
+
+}
 
 //==================================================
 // CARICA ROSE
@@ -1669,10 +1726,8 @@ function annullaAssegnazione() {
 function caricaRose() {
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
+        safeGetJSON(
+            STORAGE.LEGA
         );
 
 
@@ -1698,6 +1753,16 @@ function caricaRose() {
         return;
 
     }
+
+
+    //=========================================
+    // SOSTITUZIONE IN ATTESA
+    // (mostra un banner con pulsante annulla
+    // finché resta in sospeso, così non blocca
+    // per sempre i click sui giocatori)
+    //=========================================
+
+    mostraBannerSostituzione();
 
 
     //=========================================
@@ -1742,17 +1807,7 @@ function caricaRose() {
 
     }
 
-if (
-    !document.referrer.includes("lega.html")
-) {
 
-    localStorage.removeItem(
-        "rosaDaVisualizzare"
-    );
-
-    rosaDaVisualizzare = null;
-
-}
 
     let partecipantiDaMostrare;
 
@@ -1778,10 +1833,12 @@ if (
 
 
     //=========================================
-    // CREA TABELLA
+    // CREA TABELLA (uso innerHTML per layout ma ESCAPPO tutti i contenuti dinamici)
     //=========================================
 
     let html = `
+
+    <div class="contenitoreTabellaRose">
 
     <table class="tabellaRose">
 
@@ -1797,6 +1854,7 @@ if (
         html += `
 
         <col class="colNome">
+        <col class="colSquadra">
         <col class="colCosto">
 
         `;
@@ -1821,8 +1879,8 @@ if (
 
             html += `
 
-            <th colspan="2">
-                ${squadra.nomeSquadra}
+            <th colspan="3">
+                ${escapeHTML(squadra.nomeSquadra)}
             </th>
 
             `;
@@ -1848,8 +1906,8 @@ if (
 
             html += `
 
-            <td colspan="2">
-                ${squadra.crediti}
+            <td colspan="3">
+                ${escapeHTML(String(squadra.crediti))}
             </td>
 
             `;
@@ -1925,64 +1983,40 @@ if (
 
                     if (giocatore) {
 
-                        let nomeEscapato =
-                            String(
-                                giocatore.nome
-                            )
-                            .replace(
-                                /\\/g,
-                                "\\\\"
-                            )
-                            .replace(
-                                /'/g,
-                                "\\'"
-                            );
-
-
-                        let squadraEscapata =
-                            String(
-                                squadra.nomeSquadra
-                            )
-                            .replace(
-                                /\\/g,
-                                "\\\\"
-                            )
-                            .replace(
-                                /'/g,
-                                "\\'"
-                            );
-
-
+                        // uso data-attributes e escape dei valori
                         html += `
 
                         <td>
 
-                        <div
-                            class="nomeGiocatore ${
+                            <div class="nomeGiocatore ${
                                 giocatore.fuoriLista
                                     ? 'giocatoreFuoriLista'
                                     : ''
                             }"
-                            onclick="cliccaGiocatoreRosa(
-                                '${nomeEscapato}',
-                                '${squadraEscapata}',
-                                '${giocatore.ruolo}'
-                            )">
+                                data-nome="${escapeHTML(giocatore.nome)}"
+                                data-squadra="${escapeHTML(squadra.nomeSquadra)}"
+                                data-ruolo="${escapeHTML(giocatore.ruolo)}"
+                            >
 
-                            ${giocatore.nome}
+                                ${escapeHTML(giocatore.nome)}
 
-                        </div>
+                            </div>
 
                         </td>
 
+                        <td>
+
+                            ${escapeHTML(giocatore.squadra)}
+
+                        </td>
 
                         <td>
 
-                        <div class="costoGiocatore">
+                            <div class="costoGiocatore">
 
-                            ${giocatore.prezzo}
+                                ${escapeHTML(String(giocatore.prezzo))}
 
-                        </div>
+                            </div>
 
                         </td>
 
@@ -1993,6 +2027,7 @@ if (
 
                         html += `
 
+                        <td></td>
                         <td></td>
                         <td></td>
 
@@ -2019,14 +2054,28 @@ if (
 
     </table>
 
+    </div>
+    
     `;
 
 
     contenitore.innerHTML =
         html;
 
-}
 
+    // dopo aver inserito la tabella, colleghiamo gli event listener ai .nomeGiocatore
+    document
+        .querySelectorAll(".nomeGiocatore")
+        .forEach(el => {
+            el.addEventListener("click", function() {
+                const nome = this.dataset.nome;
+                const squadra = this.dataset.squadra;
+                const ruolo = this.dataset.ruolo;
+                cliccaGiocatoreRosa(nome, squadra, ruolo);
+            });
+        });
+
+}
 
 //==================================================
 // GIOCATORI LIBERI
@@ -2035,10 +2084,8 @@ if (
 function caricaGiocatoriLiberi() {
 
     let giocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
+        safeGetJSON(
+            STORAGE.GIOCATORI
         );
 
 
@@ -2248,28 +2295,26 @@ function caricaGiocatoriLiberi() {
 
         <td>
 
-        <span class="badgeRuolo ${g.ruolo}">
-        ${g.ruolo}
+        <span class="badgeRuolo ${escapeHTML(g.ruolo)}">
+        ${escapeHTML(g.ruolo)}
         </span>
 
         </td>
 
         <td
             class="nomeGiocatore"
-            onclick="selezionaGiocatoreLibero(
-                '${String(g.nome).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}',
-                '${String(g.squadra).replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'
-            )"
+            data-nome="${escapeHTML(g.nome)}"
+            data-squadra="${escapeHTML(g.squadra)}"
         >
-            ${g.nome}
+            ${escapeHTML(g.nome)}
         </td>
 
         <td>
-        ${g.squadra}
+        ${escapeHTML(g.squadra)}
         </td>
 
         <td>
-        ${g.quotazione}
+        ${escapeHTML(String(g.quotazione))}
         </td>
 
         </tr>
@@ -2288,6 +2333,19 @@ function caricaGiocatoriLiberi() {
 
     contenitore.innerHTML =
         html;
+
+
+    // Aggiungo listener ai nomi per aprire popup
+    document
+        .querySelectorAll("#listaGiocatoriLiberi .nomeGiocatore")
+        .forEach(el => {
+            el.style.cursor = "pointer";
+            el.addEventListener("click", function() {
+                const nome = this.dataset.nome;
+                const squadra = this.dataset.squadra;
+                selezionaGiocatoreLibero(nome, squadra);
+            });
+        });
 
 
     let selectSquadra =
@@ -2332,8 +2390,8 @@ function caricaGiocatoriLiberi() {
         squadre.forEach(s => {
 
             selectSquadra.innerHTML += `
-                <option value="${s}">
-                ${s}
+                <option value="${escapeHTML(s)}">
+                ${escapeHTML(s)}
                 </option>
             `;
 
@@ -2389,97 +2447,6 @@ function caricaGiocatoriLiberi() {
 //==================================================
 // FILTRI GIOCATORI LIBERI
 //==================================================
-
-function mostraFiltroRuoloLiberi() {
-
-    let contenitore =
-        document.getElementById(
-            "filtriLiberi"
-        );
-
-
-    if (contenitore.innerHTML != "") {
-
-        contenitore.innerHTML = "";
-
-        return;
-
-    }
-
-
-    contenitore.innerHTML = `
-
-    <div class="filtroRuoli">
-
-    <label>
-    <input
-    type="checkbox"
-    value="P"
-    onchange="applicaFiltroRuoliLiberi()">
-    <span>P</span>
-    </label>
-
-
-    <label>
-    <input
-    type="checkbox"
-    value="D"
-    onchange="applicaFiltroRuoliLiberi()">
-    <span>D</span>
-    </label>
-
-
-    <label>
-    <input
-    type="checkbox"
-    value="C"
-    onchange="applicaFiltroRuoliLiberi()">
-    <span>C</span>
-    </label>
-
-
-    <label>
-    <input
-    type="checkbox"
-    value="A"
-    onchange="applicaFiltroRuoliLiberi()">
-    <span>A</span>
-    </label>
-
-    </div>
-
-    `;
-
-}
-
-
-function applicaFiltroRuoliLiberi() {
-
-    let selezionati = [];
-
-
-    document
-        .querySelectorAll(
-            "#filtriLiberi input:checked"
-        )
-        .forEach(cb => {
-
-            selezionati.push(
-                cb.value
-            );
-
-        });
-
-
-    ruoloFiltroLiberi =
-        selezionati;
-
-
-    caricaGiocatoriLiberi();
-
-}
-
-
 function mostraFiltroNomeLiberi() {
 
     let contenitore =
@@ -2561,50 +2528,6 @@ function filtraSquadraSelect(squadra) {
 
 }
 
-
-function applicaFiltroSquadreLiberi() {
-
-    let selezionate = [];
-
-
-    document
-        .querySelectorAll(
-            "#filtriLiberi input:checked"
-        )
-        .forEach(cb => {
-
-            selezionate.push(
-                cb.value
-            );
-
-        });
-
-
-    squadraFiltroLiberi =
-        selezionate;
-
-
-    caricaGiocatoriLiberi();
-
-}
-
-
-function applicaFiltroNomeLiberi() {
-
-    nomeFiltroLiberi =
-        document
-            .querySelector(
-                "#boxNomeLiberi input"
-            )
-            .value
-            .toLowerCase();
-
-
-    caricaGiocatoriLiberi();
-
-}
-
-
 function ordinaQtLiberi() {
 
     ordineQtLiberi++;
@@ -2641,76 +2564,6 @@ function filtraRuoloSelect(ruolo) {
 }
 
 
-//==================================================
-// SCAMBIO GIOCATORI
-//==================================================
-
-function attivaScambio() {
-
-    //=========================================
-    // SE LO SCAMBIO È GIÀ ATTIVO
-    // LO DISATTIVA
-    //=========================================
-
-    if (modalitaScambio) {
-
-        modalitaScambio =
-            false;
-
-        primoScambio =
-            null;
-
-
-        let bottone =
-            document.getElementById(
-                "btnScambia"
-            );
-
-
-        if (bottone) {
-
-            bottone.style.background =
-                "";
-
-            bottone.innerHTML =
-                "🔄 SCAMBIA";
-
-        }
-
-
-        return;
-
-    }
-
-
-    //=========================================
-    // ATTIVA SCAMBIO
-    //=========================================
-
-    modalitaScambio =
-        true;
-
-    primoScambio =
-        null;
-
-
-    let bottone =
-        document.getElementById(
-            "btnScambia"
-        );
-
-
-    if (bottone) {
-
-        bottone.style.background =
-            "#ff9800";
-
-        bottone.innerHTML =
-            "✅ SCAMBIO ATTIVO";
-
-    }
-
-}
 
 
 function selezionaGiocatoreScambio(
@@ -2804,10 +2657,8 @@ function selezionaGiocatoreScambio(
 
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
+        safeGetJSON(
+            STORAGE.LEGA
         );
 
 
@@ -2938,10 +2789,15 @@ function selezionaGiocatoreScambio(
     };
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.LEGA,
-        JSON.stringify(lega)
+        lega
     );
+
+
+    // Senza questo lo scambio si perde
+    // rientrando dal login
+    aggiornaLegaSalvata(lega);
 
 
     //=========================================
@@ -2949,10 +2805,8 @@ function selezionaGiocatoreScambio(
     //=========================================
 
     let tuttiGiocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
+        safeGetJSON(
+            STORAGE.GIOCATORI
         ) || [];
 
 
@@ -3012,11 +2866,9 @@ function selezionaGiocatoreScambio(
     }
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.GIOCATORI,
-        JSON.stringify(
-            tuttiGiocatori
-        )
+        tuttiGiocatori
     );
 
 
@@ -3076,10 +2928,8 @@ document
 function iniziaMercatoRiparazione() {
 
     let asta =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.ASTA
-            )
+        safeGetJSON(
+            STORAGE.ASTA
         );
 
 
@@ -3103,9 +2953,9 @@ function iniziaMercatoRiparazione() {
     asta.ruoliTerminati = [];
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.ASTA,
-        JSON.stringify(asta)
+        asta
     );
 
 
@@ -3143,11 +2993,21 @@ function caricaGiocatoriRiparazione() {
 
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
+        safeGetJSON(
+            STORAGE.LEGA
         );
+
+
+    if (!lega) {
+
+        alert(
+            "Nessuna lega trovata"
+        );
+
+        return;
+
+    }
+
 
     //=========================================
     // AGGIUNGE I CREDITI DEL MERCATO DI RIPARAZIONE
@@ -3175,89 +3035,7 @@ function caricaGiocatoriRiparazione() {
     }
 
 
-    if (!lega) {
-
-        alert(
-            "Nessuna lega trovata"
-        );
-
-        return;
-
-    }
-
-
-    let lettore =
-        new FileReader();
-
-
-    lettore.onload =
-        function(e) {
-
-        let dati =
-            new Uint8Array(
-                e.target.result
-            );
-
-
-        let workbook =
-            XLSX.read(
-                dati,
-                {
-                    type: "array"
-                }
-            );
-
-
-        let foglio =
-            workbook.Sheets[
-                workbook.SheetNames[0]
-            ];
-
-
-        let righe =
-            XLSX.utils.sheet_to_json(
-                foglio,
-                {
-                    header: 1,
-                    range: 2,
-                    defval: ""
-                }
-            );
-
-
-        let giocatori = [];
-
-
-        //=========================================
-        // LEGGE LA NUOVA LISTA
-        //=========================================
-
-        righe.forEach(
-            riga => {
-
-                if (riga[3] !== "") {
-
-                    giocatori.push({
-
-                        ruolo:
-                            riga[1],
-
-                        nome:
-                            riga[3],
-
-                        squadra:
-                            riga[4],
-
-                        quotazione:
-                            Number(riga[5])
-
-                    });
-
-                }
-
-            }
-        );
-
+    leggiExcelGiocatori(file, function(giocatori) {
 
         //=========================================
         // CONTROLLA I GIOCATORI GIÀ IN ROSA
@@ -3302,10 +3080,15 @@ function caricaGiocatoriRiparazione() {
         );
 
 
-        localStorage.setItem(
+        safeSetJSON(
             STORAGE.LEGA,
-            JSON.stringify(lega)
+            lega
         );
+
+
+        // Senza questo i crediti aggiunti e i flag
+        // fuoriLista si perdono rientrando dal login
+        aggiornaLegaSalvata(lega);
 
 
         //=========================================
@@ -3345,11 +3128,9 @@ function caricaGiocatoriRiparazione() {
         // SALVA NUOVA LISTA
         //=========================================
 
-        localStorage.setItem(
+        safeSetJSON(
             STORAGE.GIOCATORI,
-            JSON.stringify(
-                giocatoriDisponibili
-            )
+            giocatoriDisponibili
         );
 
 
@@ -3358,10 +3139,8 @@ function caricaGiocatoriRiparazione() {
         //=========================================
 
         let asta =
-            JSON.parse(
-                localStorage.getItem(
-                    STORAGE.ASTA
-                )
+            safeGetJSON(
+                STORAGE.ASTA
             );
 
 
@@ -3385,9 +3164,9 @@ function caricaGiocatoriRiparazione() {
             "Portieri";
 
 
-        localStorage.setItem(
+        safeSetJSON(
             STORAGE.ASTA,
-            JSON.stringify(asta)
+            asta
         );
 
 
@@ -3436,10 +3215,7 @@ function caricaGiocatoriRiparazione() {
 
         );
 
-    };
-
-
-    lettore.readAsArrayBuffer(file);
+    });
 
 }
 
@@ -3491,10 +3267,8 @@ function iniziaAsta() {
 
 
     let asta =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.ASTA
-            )
+        safeGetJSON(
+            STORAGE.ASTA
         );
 
 
@@ -3533,9 +3307,9 @@ function iniziaAsta() {
     }
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.ASTA,
-        JSON.stringify(asta)
+        asta
     );
 
 
@@ -3544,7 +3318,6 @@ function iniziaAsta() {
 
 }
 
-
 //==================================================
 // AGGIORNA RUOLI ASTA
 //==================================================
@@ -3552,10 +3325,8 @@ function iniziaAsta() {
 function aggiornaRuoliAsta() {
 
     let asta =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.ASTA
-            )
+        safeGetJSON(
+            STORAGE.ASTA
         );
 
 
@@ -3646,498 +3417,6 @@ function aggiornaRuoliAsta() {
 
 
 //==================================================
-// POPUP SOSTITUZIONE GIOCATORE
-//==================================================
-
-let indiceSostituzione = null;
-
-
-//==================================================
-// APRE POPUP
-//==================================================
-
-function apriPopupSostituzione(
-    squadra,
-    ruolo,
-    giocatoreNuovo,
-    prezzo
-) {
-
-    let popup =
-        document.getElementById(
-            "popupSostituzione"
-        );
-
-
-    let testo =
-        document.getElementById(
-            "testoSostituzione"
-        );
-
-
-    let lista =
-        document.getElementById(
-            "listaSostituzione"
-        );
-
-
-    if (
-        !popup ||
-        !testo ||
-        !lista
-    ) {
-
-        alert(
-            "Popup sostituzione non trovato"
-        );
-
-        return;
-
-    }
-
-
-    //=========================================
-    // TESTO
-    //=========================================
-
-    testo.innerHTML =
-
-        "Hai terminato i posti per i "
-        + ruolo
-        + ".<br><br>"
-        + "Seleziona il giocatore da sostituire:"
-        + "<br><br>"
-        + "<strong>"
-        + giocatoreNuovo.nome
-        + "</strong>"
-        + " per "
-        + prezzo
-        + " crediti";
-
-
-    lista.innerHTML = "";
-
-
-    indiceSostituzione = null;
-
-
-    //=========================================
-    // CREA ELENCO GIOCATORI SOSTITUIBILI
-    //=========================================
-
-    squadra.rosa.forEach(
-
-        (g, indice) => {
-
-            if (
-                g.ruolo != ruolo
-            ) {
-
-                return;
-
-            }
-
-
-            let bottone =
-                document.createElement(
-                    "button"
-                );
-
-
-            bottone.type =
-                "button";
-
-
-            bottone.textContent =
-                g.nome
-                + " - "
-                + g.prezzo
-                + " crediti";
-
-
-            bottone.onclick =
-                function() {
-
-                    indiceSostituzione =
-                        indice;
-
-
-                    chiudiPopupSostituzione();
-
-
-                    completaSostituzione(
-
-                        squadra,
-
-                        indice,
-
-                        giocatoreNuovo,
-
-                        prezzo
-
-                    );
-
-                };
-
-
-            lista.appendChild(
-                bottone
-            );
-
-        }
-
-    );
-
-
-    popup.style.display =
-        "flex";
-
-}
-
-
-//==================================================
-// CHIUDE POPUP
-//==================================================
-
-function chiudiPopupSostituzione() {
-
-    let popup =
-        document.getElementById(
-            "popupSostituzione"
-        );
-
-
-    if (popup) {
-
-        popup.style.display =
-            "none";
-
-    }
-
-}
-
-
-//==================================================
-// COMPLETA SOSTITUZIONE
-//==================================================
-
-function completaSostituzione(
-    squadra,
-    indice,
-    giocatoreNuovo,
-    prezzo
-) {
-
-    //=========================================
-    // RECUPERA LEGA DAL LOCAL STORAGE
-    //=========================================
-
-    let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
-        );
-
-
-    if (!lega) {
-
-        alert(
-            "Nessuna lega trovata"
-        );
-
-        return;
-
-    }
-
-
-    //=========================================
-    // TROVA LA SQUADRA REALE
-    //=========================================
-
-    let squadraReale =
-        lega.partecipanti.find(
-            p =>
-                p.nomeSquadra ==
-                squadra.nomeSquadra
-        );
-
-
-    if (!squadraReale) {
-
-        alert(
-            "Squadra non trovata"
-        );
-
-        return;
-
-    }
-
-
-    //=========================================
-    // RECUPERA VECCHIO GIOCATORE
-    //=========================================
-
-    let vecchioGiocatore =
-        squadraReale.rosa[indice];
-
-
-    if (!vecchioGiocatore) {
-
-        alert(
-            "Giocatore da sostituire non trovato"
-        );
-
-        return;
-
-    }
-
-
-    //=========================================
-    // CONTROLLO CREDITI
-    //=========================================
-
-    if (
-        prezzo >
-        squadraReale.crediti
-    ) {
-
-        alert(
-            "Crediti insufficienti"
-        );
-
-        return;
-
-    }
-
-
-    //=========================================
-    // RECUPERA LISTA GENERALE
-    //=========================================
-
-    let tuttiGiocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
-        ) || [];
-
-
-    //=========================================
-    // LIBERA VECCHIO GIOCATORE
-    //=========================================
-
-    let indiceVecchio =
-        tuttiGiocatori.findIndex(
-
-            g =>
-                g.nome ==
-                vecchioGiocatore.nome &&
-
-                g.squadra ==
-                vecchioGiocatore.squadra
-
-        );
-
-
-    if (
-        indiceVecchio != -1
-    ) {
-
-        tuttiGiocatori[
-            indiceVecchio
-        ].acquistato =
-            false;
-
-
-        tuttiGiocatori[
-            indiceVecchio
-        ].acquistatoDa =
-            "";
-
-
-        tuttiGiocatori[
-            indiceVecchio
-        ].acquistatoDaUtente =
-            "";
-
-
-        tuttiGiocatori[
-            indiceVecchio
-        ].prezzoAcquisto =
-            0;
-
-    }
-
-
-    //=========================================
-    // SCALA I CREDITI DEL NUOVO ACQUISTO
-    //=========================================
-
-    squadraReale.crediti -=
-        prezzo;
-
-
-    //=========================================
-    // CREA NUOVO GIOCATORE
-    //=========================================
-
-    let nuovoGiocatore = {
-
-        nome:
-            giocatoreNuovo.nome,
-
-        ruolo:
-            giocatoreNuovo.ruolo,
-
-        squadra:
-            giocatoreNuovo.squadra,
-
-        quotazione:
-            giocatoreNuovo.quotazione,
-
-        prezzo:
-            prezzo
-
-    };
-
-
-    //=========================================
-    // SOSTITUISCE NELLA ROSA
-    //=========================================
-
-    squadraReale.rosa[indice] =
-        nuovoGiocatore;
-
-
-    //=========================================
-    // AGGIORNA NUOVO GIOCATORE
-    // NELLA LISTA GENERALE
-    //=========================================
-
-    let indiceNuovo =
-        tuttiGiocatori.findIndex(
-
-            g =>
-                g.nome ==
-                giocatoreNuovo.nome &&
-
-                g.squadra ==
-                giocatoreNuovo.squadra
-
-        );
-
-
-    if (
-        indiceNuovo != -1
-    ) {
-
-        tuttiGiocatori[
-            indiceNuovo
-        ].acquistato =
-            true;
-
-
-        tuttiGiocatori[
-            indiceNuovo
-        ].acquistatoDa =
-            squadraReale.nomeSquadra;
-
-
-        tuttiGiocatori[
-            indiceNuovo
-        ].acquistatoDaUtente =
-            squadraReale.nomeUtente;
-
-
-        tuttiGiocatori[
-            indiceNuovo
-        ].prezzoAcquisto =
-            prezzo;
-
-    }
-
-
-    //=========================================
-    // AGGIORNA ANCHE L'OGGETTO ASTA
-    //=========================================
-
-    giocatoreNuovo.acquistato =
-        true;
-
-
-    giocatoreNuovo.acquistatoDa =
-        squadraReale.nomeSquadra;
-
-
-    giocatoreNuovo.acquistatoDaUtente =
-        squadraReale.nomeUtente;
-
-
-    giocatoreNuovo.prezzoAcquisto =
-        prezzo;
-
-
-    //=========================================
-    // SALVA GIOCATORI
-    //=========================================
-
-    localStorage.setItem(
-        STORAGE.GIOCATORI,
-        JSON.stringify(
-            tuttiGiocatori
-        )
-    );
-
-
-    //=========================================
-    // SALVA LEGA
-    //=========================================
-
-    localStorage.setItem(
-        STORAGE.LEGA,
-        JSON.stringify(
-            lega
-        )
-    );
-
-
-    //=========================================
-    // RESET INDICE
-    //=========================================
-
-    indiceSostituzione =
-        null;
-
-
-    //=========================================
-    // AGGIORNA VISUALIZZAZIONE
-    //=========================================
-
-    caricaRose();
-
-
-    mostraGiocatore();
-
-
-    //=========================================
-    // MESSAGGIO
-    //=========================================
-
-    alert(
-
-        giocatoreNuovo.nome
-        + " ha sostituito "
-        + vecchioGiocatore.nome
-        + " nella squadra "
-        + squadraReale.nomeSquadra
-
-    );
-
-}
-
-
-//==================================================
 // CLIC SUL GIOCATORE NELLE ROSE
 // GESTIONE SOSTITUZIONE DA ASTA
 //==================================================
@@ -4170,10 +3449,8 @@ function cliccaGiocatoreRosa(
     //=========================================
 
     let asta =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.ASTA
-            )
+        safeGetJSON(
+            STORAGE.ASTA
         );
 
 
@@ -4263,10 +3540,8 @@ function cliccaGiocatoreRosa(
     //=========================================
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
+        safeGetJSON(
+            STORAGE.LEGA
         );
 
 
@@ -4352,10 +3627,8 @@ function cliccaGiocatoreRosa(
     //=========================================
 
     let tuttiGiocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
+        safeGetJSON(
+            STORAGE.GIOCATORI
         ) || [];
 
 
@@ -4487,17 +3760,16 @@ function cliccaGiocatoreRosa(
     // SALVA TUTTO
     //=========================================
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.LEGA,
-        JSON.stringify(lega)
+        lega
     );
 
+    aggiornaLegaSalvata(lega);
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.GIOCATORI,
-        JSON.stringify(
-            tuttiGiocatori
-        )
+        tuttiGiocatori
     );
 
 
@@ -4508,9 +3780,9 @@ function cliccaGiocatoreRosa(
     delete asta.sostituzioneInAttesa;
 
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.ASTA,
-        JSON.stringify(asta)
+        asta
     );
 
 
@@ -4528,6 +3800,10 @@ function cliccaGiocatoreRosa(
         " nella squadra " +
         squadraObj.nomeSquadra
     );
+
+
+
+
 
 }
 
@@ -4556,11 +3832,11 @@ function caricaLega() {
 
 
     document.getElementById("nomeLega").innerHTML =
-        lega.nomeLega;
+        escapeHTML(lega.nomeLega);
 
 
     document.getElementById("crediti").innerHTML =
-        "Crediti iniziali: " + lega.crediti;
+        "Crediti iniziali: " + escapeHTML(String(lega.crediti));
 
 
     let lista =
@@ -4572,45 +3848,28 @@ function caricaLega() {
 
     lega.partecipanti.forEach(utente => {
 
-        //=========================================
-        // PROTEZIONE APOSTROFI E CARATTERI SPECIALI
-        //=========================================
+        // costruisco elementi DOM invece di usare innerHTML per evitare XSS
 
-        let nomeSquadraEscapato =
-            String(utente.nomeSquadra)
-                .replace(/\\/g, "\\\\")
-                .replace(/'/g, "\\'");
+        const card = document.createElement("div");
+        card.className = "card rigaSquadra";
 
+        const spanUser = document.createElement("span");
+        spanUser.textContent = `👤 ${utente.nomeUtente}`;
+        card.appendChild(spanUser);
 
-        lista.innerHTML += `
+        const spanStadium = document.createElement("span");
+        spanStadium.style.cursor = "pointer";
+        spanStadium.style.textDecoration = "underline";
+        spanStadium.title = "Apri rosa";
+        spanStadium.textContent = ` ${utente.nomeSquadra}`;
+        spanStadium.addEventListener("click", () => apriRosa(utente.nomeSquadra));
+        card.appendChild(spanStadium);
 
-        <div class="card rigaSquadra">
+        const spanCredit = document.createElement("span");
+        spanCredit.textContent = `💰 ${utente.crediti}`;
+        card.appendChild(spanCredit);
 
-            <span>
-                👤 ${utente.nomeUtente}
-            </span>
-
-
-            <span
-                onclick="apriRosa('${nomeSquadraEscapato}')"
-                style="
-                    cursor:pointer;
-                    text-decoration:underline;
-                "
-                title="Apri rosa">
-
-                🏟 ${utente.nomeSquadra}
-
-            </span>
-
-
-            <span>
-                💰 ${utente.crediti}
-            </span>
-
-        </div>
-
-        `;
+        lista.appendChild(card);
 
     });
 
@@ -4635,60 +3894,6 @@ function apriRosa(nomeSquadra) {
 }
 
 
-
-function aggiornaBottoneRose() {
-
-    let bottone =
-        document.getElementById("btnTornaRose");
-
-    if (!bottone) {
-        return;
-    }
-
-
-    let rosaDaVisualizzare =
-        localStorage.getItem(
-            "rosaDaVisualizzare"
-        );
-
-
-    if (rosaDaVisualizzare) {
-
-        bottone.innerHTML =
-            "🏠 TORNA ALLA HOME";
-
-        bottone.onclick =
-            function() {
-
-                localStorage.removeItem(
-                    "rosaDaVisualizzare"
-                );
-
-                window.location.href =
-                    "lega.html";
-
-            };
-
-    }
-    else {
-
-        bottone.innerHTML =
-            "🔨 TORNA ALL'ASTA";
-
-        bottone.onclick =
-            function() {
-
-                window.location.href =
-                    "asta.html";
-
-            };
-
-    }
-
-}
-
-
-
 //==================================================
 // CARICA LE LEGHE NEL MENU
 //==================================================
@@ -4697,9 +3902,7 @@ function aggiornaBottoneRose() {
 function caricaLeghe() {
 
     let leghe =
-        JSON.parse(
-            localStorage.getItem("legheSalvate")
-        ) || [];
+        safeGetJSON("legheSalvate") || [];
 
 
     let selectLega =
@@ -4762,10 +3965,8 @@ function caricaLeghe() {
     //=========================================
 
     let utenteAttivo =
-        JSON.parse(
-            localStorage.getItem(
-                "utenteAttivo"
-            )
+        safeGetJSON(
+            "utenteAttivo"
         );
 
 
@@ -4897,9 +4098,7 @@ function caricaUtentiLega() {
 
 
     let leghe =
-        JSON.parse(
-            localStorage.getItem("legheSalvate")
-        ) || [];
+        safeGetJSON("legheSalvate") || [];
 
 
     let indice =
@@ -4995,9 +4194,7 @@ function mostraSquadraUtente() {
 
 
     let leghe =
-        JSON.parse(
-            localStorage.getItem("legheSalvate")
-        ) || [];
+        safeGetJSON("legheSalvate") || [];
 
 
     let lega =
@@ -5068,9 +4265,7 @@ function entra() {
 
 
     let leghe =
-        JSON.parse(
-            localStorage.getItem("legheSalvate")
-        ) || [];
+        safeGetJSON("legheSalvate") || [];
 
 
     let lega =
@@ -5119,9 +4314,9 @@ function entra() {
     // SALVA LA LEGA ATTIVA
     //=========================================
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.LEGA,
-        JSON.stringify(lega)
+        lega
     );
 
 
@@ -5129,9 +4324,9 @@ function entra() {
     // SALVA UTENTE ATTIVO
     //=========================================
 
-    localStorage.setItem(
+    safeSetJSON(
         "utenteAttivo",
-        JSON.stringify({
+        {
 
             nomeUtente:
                 utente.nomeUtente,
@@ -5148,7 +4343,7 @@ function entra() {
             ricorda:
                 ricordare
 
-        })
+        }
     );
 
 
@@ -5182,731 +4377,257 @@ function entra() {
 
 
 function selezionaGiocatoreLibero(nome, squadraReale) {
-
-    //=========================================
-    // CARICA LEGA
-    //=========================================
-
-    let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
-        );
-
-
+    // carica dati
+    let lega = safeGetJSON(STORAGE.LEGA);
     if (!lega) {
-
-        alert(
-            "Nessuna lega trovata"
-        );
-
+        alert("Nessuna lega trovata");
         return;
-
     }
 
+    let giocatori = safeGetJSON(STORAGE.GIOCATORI) || [];
 
-    //=========================================
-    // CARICA GIOCATORI
-    //=========================================
-
-    let giocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
-        ) || [];
-
-
-    //=========================================
-    // CERCA IL GIOCATORE
-    //=========================================
-
-    let giocatore =
-        giocatori.find(
-            g =>
-                g.nome == nome &&
-                g.squadra == squadraReale
-        );
-
-
+    let giocatore = giocatori.find(g => g.nome == nome && g.squadra == squadraReale);
     if (!giocatore) {
-
-        alert(
-            "Giocatore non trovato"
-        );
-
+        alert("Giocatore non trovato");
         return;
-
     }
 
-
-    //=========================================
-    // CONTROLLA PARTECIPANTI
-    //=========================================
-
-    if (
-        !Array.isArray(
-            lega.partecipanti
-        )
-    ) {
-
-        alert(
-            "Nessuna squadra trovata nella lega"
-        );
-
+    if (!Array.isArray(lega.partecipanti)) {
+        alert("Nessuna squadra trovata nella lega");
         return;
-
     }
 
+    // popup base
+    let sfondo = document.createElement("div");
+    sfondo.style.position = "fixed";
+    sfondo.style.left = "0";
+    sfondo.style.top = "0";
+    sfondo.style.width = "100%";
+    sfondo.style.height = "100%";
+    sfondo.style.background = "rgba(0,0,0,0.5)";
+    sfondo.style.display = "flex";
+    sfondo.style.alignItems = "center";
+    sfondo.style.justifyContent = "center";
+    sfondo.style.zIndex = "9999";
 
-    //=========================================
-    // CREA POPUP
-    //=========================================
+    let popup = document.createElement("div");
+    popup.style.background = "white";
+    popup.style.padding = "15px";
+    popup.style.borderRadius = "10px";
+    popup.style.width = "80%";
+    popup.style.maxWidth = "480px";
+    popup.style.boxSizing = "border-box";
 
-    let sfondo =
-        document.createElement(
-            "div"
-        );
+    const h2 = document.createElement("h2");
+    h2.textContent = "Assegna giocatore";
+    popup.appendChild(h2);
 
+    const pNome = document.createElement("p");
+    pNome.innerHTML = `<b>${escapeHTML(giocatore.nome)}</b>`;
+    popup.appendChild(pNome);
 
-    sfondo.style.position =
-        "fixed";
+    const infoAssign = document.createElement("p");
+    popup.appendChild(infoAssign);
 
-    sfondo.style.left =
-        "0";
+    // se è stata impostata una origine di svincolo, usiamola come selezione automatica
+    const svincoloOrigine = localStorage.getItem('svincoloOrigine');
+    let partecipantiToShow = lega.partecipanti;
+    let autoSelectedPartecipante = null;
 
-    sfondo.style.top =
-        "0";
-
-    sfondo.style.width =
-        "100%";
-
-    sfondo.style.height =
-        "100%";
-
-    sfondo.style.background =
-        "rgba(0,0,0,0.5)";
-
-    sfondo.style.display =
-        "flex";
-
-    sfondo.style.alignItems =
-        "center";
-
-    sfondo.style.justifyContent =
-        "center";
-
-    sfondo.style.zIndex =
-        "9999";
-
-
-    let popup =
-        document.createElement(
-            "div"
-        );
-
-
-    popup.style.background =
-        "white";
-
-    popup.style.padding =
-        "15px";
-
-    popup.style.borderRadius =
-        "10px";
-
-    popup.style.width =
-        "80%";
-
-    popup.style.maxWidth =
-        "320px";
-
-    popup.style.boxSizing =
-        "border-box";
-
-
-    popup.innerHTML = `
-
-        <h2>
-            Assegna giocatore
-        </h2>
-
-        <p>
-            <b>${giocatore.nome}</b>
-        </p>
-
-        <p>
-            Seleziona la squadra:
-        </p>
-
-    `;
-
-
-    //=========================================
-    // RADIO SQUADRE
-    //=========================================
-
-    lega.partecipanti.forEach(
-        (
-            partecipante,
-            indice
-        ) => {
-
-            let riga =
-                document.createElement(
-                    "label"
-                );
-
-
-            riga.style.display =
-                "block";
-
-            riga.style.textAlign =
-                "left";
-
-            riga.style.padding =
-                "3px 0";
-
-            riga.style.margin =
-                "0";
-
-            riga.style.cursor =
-                "pointer";
-
-
-            riga.innerHTML = `
-
-                <span
-                    style="
-                        display:inline-flex;
-                        align-items:center;
-                        gap:6px;
-                        margin:0;
-                        padding:0;
-                    "
-                >
-
-                    <input
-                        type="radio"
-                        name="squadraLibera"
-                        value="${indice}"
-                        style="
-                            margin:0;
-                            padding:0;
-                            width:auto;
-                        "
-                    >
-
-                    <span>
-                        ${partecipante.nomeUtente}
-                        &nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
-                        ${partecipante.nomeSquadra}
-                    </span>
-
-                </span>
-
-            `;
-
-
-            popup.appendChild(
-                riga
-            );
-
+    if (svincoloOrigine) {
+        const filtered = lega.partecipanti.filter(p => p.nomeSquadra === svincoloOrigine);
+        if (filtered.length > 0) {
+            partecipantiToShow = filtered;
+            autoSelectedPartecipante = filtered[0];
+            infoAssign.innerHTML = `Assegnerai il giocatore alla squadra: <b>${escapeHTML(autoSelectedPartecipante.nomeSquadra)}</b>`;
+        } else {
+            // se l'origine non esiste più, rimuovila e mostra tutte le squadre
+            localStorage.removeItem('svincoloOrigine');
+            infoAssign.textContent = "Seleziona la squadra:";
+            partecipantiToShow = lega.partecipanti;
         }
-    );
+    } else {
+        infoAssign.textContent = "Seleziona la squadra:";
+    }
 
+    // container per radio (mostrato solo se non c'è selezione automatica)
+    const radiosContainer = document.createElement("div");
+    if (!autoSelectedPartecipante) {
+        partecipantiToShow.forEach((partecipante, indice) => {
+            let label = document.createElement("label");
+            label.style.display = "block";
+            label.style.textAlign = "left";
+            label.style.padding = "3px 0";
+            label.style.margin = "0";
+            label.style.cursor = "pointer";
 
-    //=========================================
-    // PREZZO
-    //=========================================
+            const spanWrap = document.createElement("span");
+            spanWrap.style.display = "inline-flex";
+            spanWrap.style.alignItems = "center";
+            spanWrap.style.gap = "6px";
 
-    let prezzoLabel =
-        document.createElement(
-            "p"
-        );
+            const inputRadio = document.createElement("input");
+            inputRadio.type = "radio";
+            inputRadio.name = "squadraLibera";
+            inputRadio.value = String(indice);
+            inputRadio.style.margin = "0";
 
+            const spanText = document.createElement("span");
+            spanText.textContent = `${partecipante.nomeUtente} - ${partecipante.nomeSquadra}`;
+            spanText.style.whiteSpace = "nowrap";
+            spanText.style.display = "inline-block";
 
+            spanWrap.appendChild(inputRadio);
+            spanWrap.appendChild(spanText);
+            label.appendChild(spanWrap);
+
+            radiosContainer.appendChild(label);
+        });
+        popup.appendChild(radiosContainer);
+    }
+
+    // prezzo
+    let prezzoLabel = document.createElement("p");
     prezzoLabel.innerHTML = `
-
         <label>
-
             Prezzo:
-
-            <input
-                type="number"
-                id="prezzoGiocatoreLibero"
-                min="0"
-                value="0"
-                style="width:80px;"
-            >
-
+            <input type="number" id="prezzoGiocatoreLibero" min="0" value="0" style="width:80px;">
         </label>
-
     `;
+    popup.appendChild(prezzoLabel);
 
+    // pulsanti
+    let contenitorePulsanti = document.createElement("div");
+    contenitorePulsanti.style.marginTop = "20px";
+    contenitorePulsanti.style.display = "flex";
+    contenitorePulsanti.style.gap = "10px";
 
-    popup.appendChild(
-        prezzoLabel
-    );
+    let annulla = document.createElement("button");
+    annulla.innerHTML = "ANNULLA";
+    annulla.style.backgroundColor = "#808080";
+    annulla.style.color = "white";
 
+    let assegna = document.createElement("button");
+    assegna.innerHTML = "ASSEGNA";
+    assegna.style.backgroundColor = "#256b2a";
+    assegna.style.color = "white";
 
-    //=========================================
-    // PULSANTI
-    //=========================================
+    contenitorePulsanti.appendChild(annulla);
+    contenitorePulsanti.appendChild(assegna);
+    popup.appendChild(contenitorePulsanti);
 
-    let contenitorePulsanti =
-        document.createElement(
-            "div"
-        );
+    sfondo.appendChild(popup);
+    document.body.appendChild(sfondo);
 
+    annulla.onclick = function() {
+        // rimuoviamo la chiave di origine solo se impostata (l'utente ha annullato il flusso)
+        if (svincoloOrigine) localStorage.removeItem('svincoloOrigine');
+        sfondo.remove();
+    };
 
-    contenitorePulsanti.style.marginTop =
-        "20px";
+    assegna.onclick = function() {
+        // determinare la squadra scelta
+        let partecipante = null;
 
-    contenitorePulsanti.style.display =
-        "flex";
-
-    contenitorePulsanti.style.gap =
-        "10px";
-
-
-    let annulla =
-        document.createElement(
-            "button"
-        );
-
-
-    annulla.innerHTML =
-        "ANNULLA";
-
-
-    annulla.style.backgroundColor =
-        "#808080";
-
-    annulla.style.color =
-        "white";
-
-
-    let assegna =
-        document.createElement(
-            "button"
-        );
-
-
-    assegna.innerHTML =
-        "ASSEGNA";
-
-
-    assegna.style.backgroundColor =
-        "#256b2a";
-
-    assegna.style.color =
-        "white";
-
-
-    contenitorePulsanti.appendChild(
-        annulla
-    );
-
-    contenitorePulsanti.appendChild(
-        assegna
-    );
-
-
-    popup.appendChild(
-        contenitorePulsanti
-    );
-
-
-    sfondo.appendChild(
-        popup
-    );
-
-
-    document.body.appendChild(
-        sfondo
-    );
-
-
-    //=========================================
-    // ANNULLA
-    //=========================================
-
-    annulla.onclick =
-        function() {
-
-            sfondo.remove();
-
-        };
-
-
-    //=========================================
-    // ASSEGNA
-    //=========================================
-
-    assegna.onclick =
-        function() {
-
-            //=========================================
-            // SQUADRA SELEZIONATA
-            //=========================================
-
-            let radioSelezionato =
-                popup.querySelector(
-                    'input[name="squadraLibera"]:checked'
-                );
-
-
+        if (autoSelectedPartecipante) {
+            partecipante = autoSelectedPartecipante;
+        } else {
+            let radioSelezionato = popup.querySelector('input[name="squadraLibera"]:checked');
             if (!radioSelezionato) {
-
-                alert(
-                    "Seleziona una squadra"
-                );
-
+                alert("Seleziona una squadra");
                 return;
-
             }
-
-
-            //=========================================
-            // PREZZO
-            //=========================================
-
-            let prezzo =
-                Number(
-                    popup.querySelector(
-                        "#prezzoGiocatoreLibero"
-                    ).value
-                );
-
-
-            if (
-                prezzo <= 0
-            ) {
-
-                alert(
-                    "Inserisci un prezzo valido"
-                );
-
-                return;
-
-            }
-
-
-            //=========================================
-            // PARTECIPANTE
-            //=========================================
-
-            let indiceSquadra =
-                Number(
-                    radioSelezionato.value
-                );
-
-
-            let partecipante =
-                lega.partecipanti[
-                    indiceSquadra
-                ];
-
-
-            if (!partecipante) {
-
-                alert(
-                    "Squadra non trovata"
-                );
-
-                return;
-
-            }
-
-
-            //=========================================
-            // CREA ROSA
-            //=========================================
-
-            if (
-                !Array.isArray(
-                    partecipante.rosa
-                )
-            ) {
-
-                partecipante.rosa =
-                    [];
-
-            }
-
-
-            //=========================================
-            // CONTROLLO CREDITI
-            //=========================================
-
-            if (
-                prezzo >
-                partecipante.crediti
-            ) {
-
-                alert(
-                    "Crediti insufficienti"
-                );
-
-                return;
-
-            }
-
-
-            //=========================================
-            // CONTROLLA POSTI DEL RUOLO
-            //=========================================
-
-            let limite =
-                lega.composizioneRosa[
-                    giocatore.ruolo
-                ];
-
-
-            let presenti =
-                partecipante.rosa.filter(
-                    g =>
-                        g.ruolo ==
-                        giocatore.ruolo
-                );
-
-
-
-            //=========================================
-            // POSTI PIENI
-            //=========================================
-
-            if (
-                presenti.length >=
-                limite
-            ) {
-
-                let conferma =
-                    confirm(
-                        "Hai terminato i posti per il ruolo " +
-                        giocatore.ruolo +
-                        ".\n\n" +
-                        "Vuoi sostituire un giocatore con " +
-                        giocatore.nome +
-                        "?\n\n" +
-                        "Seleziona il giocatore da sostituire"
-                    );
-
-
-                if (!conferma) {
-
-                    return;
-
-                }
-
-
-                //=========================================
-                // SALVA SOSTITUZIONE IN ATTESA
-                //=========================================
-
-                let asta =
-                    JSON.parse(
-                        localStorage.getItem(
-                            STORAGE.ASTA
-                        )
-                    ) || {};
-
-
-                asta.sostituzioneInAttesa = {
-
-                    nomeNuovo:
-                        giocatore.nome,
-
-                    ruoloNuovo:
-                        giocatore.ruolo,
-
-                    squadraRealeNuovo:
-                        giocatore.squadra,
-
-                    quotazioneNuovo:
-                        giocatore.quotazione,
-
-                    prezzoNuovo:
-                        prezzo,
-
-                    nomeUtente:
-                        partecipante.nomeUtente,
-
-                    nomeSquadra:
-                        partecipante.nomeSquadra
-
-                };
-
-
-                localStorage.setItem(
-                    STORAGE.ASTA,
-                    JSON.stringify(
-                        asta
-                    )
-                );
-
-
-                //=========================================
-                // CHIUDE POPUP SVINCOLATI
-                //=========================================
-
-                sfondo.remove();
-
-
-                //=========================================
-                // VAI ALLE ROSE
-                //=========================================
-
-
-                window.location.href =
-                    "rose.html";
-
-
-                return;
-
-            }
-
-
-
-            //=========================================
-            // SCALA CREDITI
-            //=========================================
-
-            partecipante.crediti -=
-                prezzo;
-
-
-            //=========================================
-            // AGGIUNGE ALLA ROSA
-            //=========================================
-
-            partecipante.rosa.push({
-
-                nome:
-                    giocatore.nome,
-
-                ruolo:
-                    giocatore.ruolo,
-
-                squadra:
-                    giocatore.squadra,
-
-                quotazione:
-                    giocatore.quotazione,
-
-                prezzo:
-                    prezzo
-
-            });
-
-
-            //=========================================
-            // SEGNA COME ACQUISTATO
-            //=========================================
-
-            giocatore.acquistado =
-                true;
-
-            giocatore.acquistato =
-                true;
-
-            giocatore.acquistadoDa =
-                partecipante.nomeSquadra;
-
-            giocatore.acquistatoDa =
-                partecipante.nomeSquadra;
-
-            giocatore.acquistadoDaUtente =
-                partecipante.nomeUtente;
-
-            giocatore.acquistatoDaUtente =
-                partecipante.nomeUtente;
-
-            giocatore.prezzoAcquisto =
-                prezzo;
-
-
-            //=========================================
-            // SALVA LEGA
-            //=========================================
-
-            localStorage.setItem(
-                STORAGE.LEGA,
-                JSON.stringify(
-                    lega
-                )
+            let indiceSelezionato = Number(radioSelezionato.value);
+            partecipante = partecipantiToShow[indiceSelezionato];
+        }
+
+        if (!partecipante) {
+            alert("Squadra non trovata");
+            return;
+        }
+
+        let prezzo = Number(popup.querySelector("#prezzoGiocatoreLibero").value);
+        if (isNaN(prezzo) || prezzo <= 0) {
+            alert("Inserisci un prezzo valido");
+            return;
+        }
+
+        if (!Array.isArray(partecipante.rosa)) partecipante.rosa = [];
+
+        if (prezzo > partecipante.crediti) {
+            alert("Crediti insufficienti");
+            return;
+        }
+
+        let limite = lega.composizioneRosa[giocatore.ruolo];
+        let presenti = partecipante.rosa.filter(g => g.ruolo == giocatore.ruolo);
+
+        if (presenti.length >= limite) {
+            let conferma = confirm(
+                "Hai terminato i posti per il ruolo " +
+                giocatore.ruolo +
+                ".\n\n" +
+                "Vuoi assegnare comunque il giocatore " +
+                giocatore.nome +
+                " e scegliere chi sostituire?\n\n" +
+                "Se confermi, verrai reindirizzato alle Rose per selezionare il giocatore da sostituire."
             );
 
+            if (!conferma) return;
 
-            //=========================================
-            // AGGIORNA LISTA GENERALE
-            //=========================================
+            let asta = safeGetJSON(STORAGE.ASTA) || {};
+            asta.sostituzioneInAttesa = {
+                nomeNuovo: giocatore.nome,
+                ruoloNuovo: giocatore.ruolo,
+                squadraRealeNuovo: giocatore.squadra,
+                quotazioneNuovo: giocatore.quotazione,
+                prezzoNuovo: prezzo,
+                nomeUtente: partecipante.nomeUtente,
+                nomeSquadra: partecipante.nomeSquadra
+            };
+            safeSetJSON(STORAGE.ASTA, asta);
 
-            let indiceGiocatore =
-                giocatori.findIndex(
-                    g =>
-                        g.nome ==
-                        giocatore.nome &&
-                        g.squadra ==
-                        giocatore.squadra
-                );
-
-
-            if (
-                indiceGiocatore != -1
-            ) {
-
-                giocatori[
-                    indiceGiocatore
-                ] =
-                    giocatore;
-
-            }
-
-
-            localStorage.setItem(
-                STORAGE.GIOCATORI,
-                JSON.stringify(
-                    giocatori
-                )
-            );
-
-
-            //=========================================
-            // CHIUDE POPUP
-            //=========================================
+            // rimuoviamo svincoloOrigine: il flusso prosegue sulle Rose
+            if (svincoloOrigine) localStorage.removeItem('svincoloOrigine');
 
             sfondo.remove();
+            window.location.href = "rose.html";
+            return;
+        }
 
+        // eseguire assegnazione diretta
+        partecipante.crediti -= prezzo;
+        partecipante.rosa.push({
+            nome: giocatore.nome,
+            ruolo: giocatore.ruolo,
+            squadra: giocatore.squadra,
+            quotazione: giocatore.quotazione,
+            prezzo: prezzo
+        });
 
-            //=========================================
-            // CONFERMA
-            //=========================================
+        giocatore.acquistato = true;
+        giocatore.acquistatoDa = partecipante.nomeSquadra;
+        giocatore.acquistatoDaUtente = partecipante.nomeUtente;
+        giocatore.prezzoAcquisto = prezzo;
 
-            alert(
+        // salva dati
+        safeSetJSON(STORAGE.LEGA, lega);
 
-                giocatore.nome +
-                " assegnato a " +
-                partecipante.nomeSquadra +
-                "\n\nPrezzo: " +
-                prezzo +
-                " crediti"
+        // rimuoviamo svincoloOrigine
+        if (svincoloOrigine) localStorage.removeItem('svincoloOrigine');
 
-            );
+        let indiceGiocatore = giocatori.findIndex(g => g.nome == giocatore.nome && g.squadra == giocatore.squadra);
+        if (indiceGiocatore != -1) giocatori[indiceGiocatore] = giocatore;
+        safeSetJSON(STORAGE.GIOCATORI, giocatori);
 
+        sfondo.remove();
 
-            //=========================================
-            // RICARICA
-            //=========================================
-
+        // Aggiorna lista svincolati se visibile (non tocca la visualizzazione delle Rose)
+        if (document.getElementById('listaGiocatoriLiberi') && typeof caricaGiocatoriLiberi === 'function') {
             caricaGiocatoriLiberi();
-
-        };
-
+        }
+    };
 }
-
 
 
 function mostraRiparazione() {
@@ -5970,10 +4691,8 @@ function svincolaGiocatore(
     //=========================================
 
     let lega =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.LEGA
-            )
+        safeGetJSON(
+            STORAGE.LEGA
         );
 
 
@@ -6074,10 +4793,8 @@ function svincolaGiocatore(
     //=========================================
 
     let tuttiGiocatori =
-        JSON.parse(
-            localStorage.getItem(
-                STORAGE.GIOCATORI
-            )
+        safeGetJSON(
+            STORAGE.GIOCATORI
         ) || [];
 
 
@@ -6124,11 +4841,9 @@ function svincolaGiocatore(
     // SALVA LEGA
     //=========================================
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.LEGA,
-        JSON.stringify(
-            lega
-        )
+        lega
     );
 
 
@@ -6136,36 +4851,57 @@ function svincolaGiocatore(
     // SALVA GIOCATORI
     //=========================================
 
-    localStorage.setItem(
+    safeSetJSON(
         STORAGE.GIOCATORI,
-        JSON.stringify(
-            tuttiGiocatori
-        )
+        tuttiGiocatori
     );
 
+
+    //=========================================
+    // AGGIORNA LEGA SALVATA
+    //=========================================
+
+    aggiornaLegaSalvata(lega);
+
+    // salva origine svincolo per il flusso di assegnazione sui svincolati
+    localStorage.setItem('svincoloOrigine', squadraObj.nomeSquadra);
 
     //=========================================
     // FINE MODALITÀ SVINCOLO
     //=========================================
 
-    modalitaSvincolo =
-        false;
+    modalitaSvincolo = false;
 
-        let bottone =
-            document.getElementById("btnSvincola");
+    let bottone =
+        document.getElementById("btnSvincola");
 
-        if (bottone) {
-            bottone.style.backgroundColor = "#388E3C";
+    if (bottone) {
+        bottone.style.backgroundColor =
+            "#388E3C";
+    }
+
+
+    //=========================================
+    // AGGIORNA LISTA SVINCOLATI SE PRESENTE
+    //=========================================
+    // Se la pagina corrente contiene l'elenco degli svincolati,
+    // aggiorniamo subito il DOM chiamando caricaGiocatoriLiberi().
+    // Altrimenti navighiamo alla pagina degli svincolati.
+    try {
+        if (document.getElementById('listaGiocatoriLiberi') && typeof caricaGiocatoriLiberi === 'function') {
+            caricaGiocatoriLiberi();
+            return;
         }
+    } catch (e) {
+        // se qualcosa va storto non blocchiamo il flusso
+        console.debug("Aggiornamento lista svincolati fallito:", e);
+    }
 
-
-    //=========================================
-    // AGGIORNA ROSE
-    //=========================================
-
-    caricaRose();
+    // Comportamento originale: vai agli svincolati (silenzioso)
+    window.location.href = "giocatori-liberi.html";
 
 }
+
 
 
 function attivaModalitaScambio() {
@@ -6202,3 +4938,105 @@ function attivaModalitaScambio() {
             );
     }
 }
+
+
+function apriMiaRosa() {
+
+    let utenteAttivo =
+        JSON.parse(
+            localStorage.getItem(
+                "utenteAttivo"
+            )
+        );
+
+    if (!utenteAttivo) {
+
+        alert("Nessun utente attivo");
+
+        return;
+
+    }
+
+    if (!utenteAttivo.nomeSquadra) {
+
+        alert("Squadra dell'utente non trovata");
+
+        return;
+
+    }
+
+    localStorage.setItem(
+        "rosaDaVisualizzare",
+        utenteAttivo.nomeSquadra
+    );
+
+    window.location.href =
+        "rose.html";
+}
+
+
+
+//==================================================
+// LA MIA ROSA
+//==================================================
+
+function apriMiaRosa() {
+
+    let utenteAttivo =
+        JSON.parse(
+            localStorage.getItem(
+                "utenteAttivo"
+            )
+        );
+
+
+    if (!utenteAttivo) {
+
+        alert(
+            "Utente attivo non trovato"
+        );
+
+        return;
+
+    }
+
+
+    if (!utenteAttivo.nomeSquadra) {
+
+        alert(
+            "Nome squadra non trovato"
+        );
+
+        return;
+
+    }
+
+
+    localStorage.setItem(
+        "rosaDaVisualizzare",
+        utenteAttivo.nomeSquadra
+    );
+
+
+    window.location.href =
+        "rose.html";
+
+}
+
+
+//==================================================
+// TUTTE LE ROSE
+//==================================================
+
+
+
+function apriTutteLeRose() {
+
+    localStorage.removeItem(
+        "rosaDaVisualizzare"
+    );
+
+    location.href =
+        "rose.html";
+}
+
