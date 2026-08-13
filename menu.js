@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     barra.innerHTML = `
 
+    
         <button
             onclick="apriMiaRosa()"
         >
