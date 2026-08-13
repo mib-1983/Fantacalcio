@@ -66,41 +66,71 @@ let modalitaSvincolo = false;
 //==================================================
 
 function creaPartecipanti() {
+let numero =
+    document.getElementById("numeroPartecipanti").value;
 
-    let numero =
-        document.getElementById("numeroPartecipanti").value;
+let contenitore =
+    document.getElementById("listaPartecipanti");
 
-    let contenitore =
-        document.getElementById("listaPartecipanti");
+contenitore.innerHTML = "";
 
-    contenitore.innerHTML = "";
+for (let i = 1; i <= numero; i++) {
 
-    for (let i = 1; i <= numero; i++) {
+    contenitore.innerHTML += `
 
-        contenitore.innerHTML += `
+    <div class="rigaPartecipante">
 
-        <div class="rigaPartecipante">
+        <span>${i}</span>
 
-            <span>${i}</span>
+        <input
+            type="text"
+            placeholder="Nome utente">
 
-            <input
-                type="text"
-                placeholder="Nome utente">
+        <input
+            type="text"
+            placeholder="Nome squadra">
 
-            <input
-                type="text"
-                placeholder="Nome squadra">
+    </div>
 
-        </div>
-
-        `;
+    `;
 
     }
-
 }
 
 
+
 function salvaLega() {
+
+    //=========================================
+    // CONTROLLI
+    //=========================================
+
+    const nomeLega =
+        document.getElementById("nomeLega").value.trim();
+
+    const fileGiocatori =
+        document.getElementById("fileGiocatori").files[0];
+
+
+    if (!nomeLega) {
+
+        alert("Inserisci il nome della lega");
+        return;
+
+    }
+
+
+    if (!fileGiocatori) {
+
+        alert("Carica la lista giocatori Fantagazzetta");
+        return;
+
+    }
+
+
+    //=========================================
+    // CREAZIONE LEGA
+    //=========================================
 
     let lega = {
 
@@ -206,7 +236,7 @@ function salvaLega() {
 
 
     window.location.href =
-        "lega.html";
+        "index.html";
 
 }
 
@@ -262,6 +292,29 @@ function caricaAcquirenti() {
 
 
     mostraSquadra();
+
+    // =========================================
+    // MOSTRA SUCCESSIVO SOLO AL BANDITORE
+    // =========================================
+    
+    let utenteAttivo =
+        safeGetJSON("utenteAttivo");
+
+    let btnSuccessivo =
+        document.getElementById("btnSuccessivo");
+
+    if (btnSuccessivo && utenteAttivo) {
+
+        let utente =
+            lega.partecipanti[
+                Number(utenteAttivo.indiceUtente)
+            ];
+
+        btnSuccessivo.style.display =
+            utente && utente.banditore === true
+                ? "block"
+                : "none";
+    }
 
 }
 
@@ -442,12 +495,6 @@ function caricaGiocatoriExcel() {
             giocatori
         );
 
-
-        alert(
-            "Caricati " +
-            giocatori.length +
-            " giocatori"
-        );
 
     });
 
@@ -1415,6 +1462,7 @@ function assegnaGiocatore() {
     );
 
 
+
     document.getElementById(
         "prezzoFinale"
     ).value = 0;
@@ -1430,18 +1478,19 @@ function assegnaGiocatore() {
     mostraGiocatore();
 
 
-    alert(
-
-        giocatore.nome +
-        " acquistato da " +
-        squadra.nomeSquadra +
-        " per " +
-        prezzo +
-        " crediti"
-
-    );
+alert(
+    "ACQUISTATO:\n" +
+    giocatore.nome +
+    "\n" +
+    squadra.nomeSquadra +
+    "\n" +
+    prezzo +
+    " crediti"
+);
 
 }
+
+
 
 
 //==================================================
@@ -2223,6 +2272,8 @@ function caricaGiocatoriLiberi() {
 
     let html = `
 
+    <div class="contenitoreTabellaLiberi">
+
     <table class="tabellaGiocatoriLiberi">
 
     <colgroup>
@@ -2327,6 +2378,8 @@ function caricaGiocatoriLiberi() {
     html += `
 
     </table>
+
+    </div>
 
     `;
 
@@ -3846,28 +3899,178 @@ function caricaLega() {
     lista.innerHTML = "";
 
 
+    // INTESTAZIONE
+
+    const intestazione =
+        document.createElement("div");
+
+    intestazione.className =
+        "rigaSquadra intestazioneBanditore";
+
+
+    const titoloUtente =
+        document.createElement("span");
+
+    titoloUtente.textContent =
+        "Utente";
+
+    intestazione.appendChild(titoloUtente);
+
+
+    const titoloSquadra =
+        document.createElement("span");
+
+    titoloSquadra.textContent =
+        "Squadra";
+
+    intestazione.appendChild(titoloSquadra);
+
+
+    const titoloCrediti =
+        document.createElement("span");
+
+    titoloCrediti.textContent =
+        "Crediti";
+
+    intestazione.appendChild(titoloCrediti);
+
+
+    const titoloBanditore =
+        document.createElement("span");
+
+    titoloBanditore.textContent =
+        "Scegli Banditore";
+
+    intestazione.appendChild(titoloBanditore);
+
+
+    lista.appendChild(intestazione);
+
+
     lega.partecipanti.forEach(utente => {
 
-        // costruisco elementi DOM invece di usare innerHTML per evitare XSS
+        const card =
+            document.createElement("div");
 
-        const card = document.createElement("div");
-        card.className = "card rigaSquadra";
+        card.className =
+            "card rigaSquadra";
 
-        const spanUser = document.createElement("span");
-        spanUser.textContent = `👤 ${utente.nomeUtente}`;
+
+        const spanUser =
+            document.createElement("span");
+
+        spanUser.textContent =
+            `👤${utente.nomeUtente}`;
+
         card.appendChild(spanUser);
 
-        const spanStadium = document.createElement("span");
-        spanStadium.style.cursor = "pointer";
-        spanStadium.style.textDecoration = "underline";
-        spanStadium.title = "Apri rosa";
-        spanStadium.textContent = ` ${utente.nomeSquadra}`;
-        spanStadium.addEventListener("click", () => apriRosa(utente.nomeSquadra));
+
+        const spanStadium =
+            document.createElement("span");
+
+        spanStadium.style.cursor =
+            "pointer";
+
+        spanStadium.style.textDecoration =
+            "underline";
+
+        spanStadium.title =
+            "Apri rosa";
+
+        spanStadium.textContent =
+            ` ${utente.nomeSquadra}`;
+
+        spanStadium.addEventListener(
+            "click",
+            () => apriRosa(utente.nomeSquadra)
+        );
+
         card.appendChild(spanStadium);
 
-        const spanCredit = document.createElement("span");
-        spanCredit.textContent = `💰 ${utente.crediti}`;
+
+        const spanCredit =
+            document.createElement("span");
+
+        spanCredit.textContent =
+            `💰 ${utente.crediti}`;
+
         card.appendChild(spanCredit);
+
+        // CHECKBOX BANDITORE
+
+        const checkbox =
+            document.createElement("input");
+
+        checkbox.type =
+            "checkbox";
+
+        checkbox.className =
+            "checkboxBanditore";
+
+        checkbox.checked =
+            utente.banditore === true;
+
+        checkbox.addEventListener("change", function () {
+
+            if (this.checked) {
+
+                // Deseleziona tutti gli altri
+                document
+                    .querySelectorAll(".checkboxBanditore")
+                    .forEach(altraCheckbox => {
+
+                        if (altraCheckbox !== this) {
+                            altraCheckbox.checked = false;
+                        }
+
+                    });
+
+                // Salva il banditore
+                lega.partecipanti.forEach(partecipante => {
+
+                    partecipante.banditore =
+                        partecipante === utente;
+
+                });
+
+            } else {
+
+                // Nessun banditore selezionato
+                utente.banditore = false;
+
+            }
+
+            localStorage.setItem(
+                STORAGE.LEGA,
+                JSON.stringify(lega)
+            );
+
+
+let legheSalvate =
+    safeGetJSON("legheSalvate") || [];
+
+let indiceLega =
+    legheSalvate.findIndex(
+        l => l.nomeLega === lega.nomeLega
+    );
+
+if (indiceLega !== -1) {
+
+    legheSalvate[indiceLega] =
+        lega;
+
+    safeSetJSON(
+        "legheSalvate",
+        legheSalvate
+    );
+
+}
+
+
+        });
+
+        card.appendChild(checkbox);
+
 
         lista.appendChild(card);
 
@@ -5039,4 +5242,3 @@ function apriTutteLeRose() {
     location.href =
         "rose.html";
 }
-

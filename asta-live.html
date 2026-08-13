@@ -85,6 +85,7 @@ readonly>
 <input 
 type="number"
 id="prezzoFinale"
+class="inputCampo"
 value="0"
 min="0">
 
@@ -93,8 +94,8 @@ min="0">
 
 <div class="boxAssegna">
 
-<button onclick="assegnaGiocatore()">
-🪙 ASSEGNA
+<button onclick="assegnaGiocatore(); coloraAssegnazione()">
+    🪙 ASSEGNA
 </button>
 
 </div>
@@ -108,7 +109,7 @@ min="0">
     </button>
 
 
-    <button onclick="successivoGiocatore()">
+    <button id="btnSuccessivo" onclick="successivoGiocatore()">
     Successivo ➡
     </button>
 

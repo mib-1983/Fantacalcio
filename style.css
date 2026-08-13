@@ -8,21 +8,20 @@ body {
 
 /* contenitore principale */
 .container {
-
-    width: 90%;
-    max-width: 380px;
-
-    margin: 30px auto;
-
+    width: min(92%, 1200px);
+    margin: clamp(15px, 3vw, 30px) auto;
     background: white;
-
-    padding: 25px;
-
+    padding: 70px clamp(15px, 3vw, 35px) 35px;
     border-radius: 20px;
-
     box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    box-sizing: border-box;
 }
 
+/* SPAZIO PER IL MENU SUPERIORE FISSO */
+
+.container {
+    padding-top: 60px !important;
+}
 
 /* titolo */
 
@@ -212,7 +211,8 @@ button:last-of-type {
 }
 
 .rigaSquadra {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr 70px 35px;
     align-items: center;
     gap: 10px;
     width: 100%;
@@ -220,18 +220,35 @@ button:last-of-type {
 }
 
 .rigaSquadra span:nth-child(1) {
-    flex: 1;
     text-align: left;
 }
 
 .rigaSquadra span:nth-child(2) {
-    flex: 1;
     text-align: left;
 }
 
 .rigaSquadra span:nth-child(3) {
-    flex: 0 0 90px;
-    text-align: right;
+    text-align: left;
+}
+
+.rigaSquadra .checkboxBanditore {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    padding: 0;
+    justify-self: center;
+    cursor: pointer;
+}
+
+
+#listaUtenti .rigaSquadra {
+    border-bottom: 1px solid #ddd;
+    padding: 8px 0;
+}
+
+#listaUtenti .intestazioneBanditore {
+    border-bottom: 2px solid #aaa;
+    padding-bottom: 8px;
 }
 
 .scelta label {
@@ -755,14 +772,12 @@ button:last-of-type {
 
 #prezzoFinale {
 
-    width:100px;
+    width:200px;
     height:45px;
     font-size:24px;
     font-weight:bold;
     text-align:center;
     border-radius:8px;
-
-
 }
 
 .rigaCampo {
@@ -1082,6 +1097,13 @@ button:last-of-type {
   font-weight: 600 !important;
 }
 
+#listaUtenti .intestazioneBanditore span {
+    font-size: 12px !important;
+    white-space: normal;
+    line-height: 1.1;
+    text-align: left;
+}
+
 .header-partecipanti-inline h2,
 .header-partecipanti-inline .inline-credits {
   display: inline-block;
@@ -1096,32 +1118,22 @@ button:last-of-type {
 
 .barra-fondo {
 
-    position: sticky;
-
+    position: fixed;
+    left: 0;
     bottom: 0;
-
+    bottom: 0;
     display: flex;
-
     flex-direction: row;
-
     justify-content: space-around;
-
     align-items: center;
-
     width: 100%;
-
     gap: 6px;
-
     padding: 6px 0;
-
-    background: white;
-
+    background: rgb(191, 210, 231);
     border-top: 1px solid #ccc;
-
     z-index: 1000;
-
     box-sizing: border-box;
-
+    margin-bottom: 0px;
 }
 
 
@@ -1132,29 +1144,17 @@ button:last-of-type {
 .barra-fondo button {
 
     width: 65px;
-
     height: 65px;
-
     padding: 4px;
-
     border: none;
-
     border-radius: 8px;
-
     background: #eeeeee;
-
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     justify-content: center;
-
     gap: 2px;
-
     font-size: 12px;
-
     cursor: pointer;
 
 }
@@ -1212,12 +1212,17 @@ button:last-of-type {
    ========================================= */
 
 .menu-superiore {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1001;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 50px;
-    width: 100%;
-    margin-bottom: 5px;
+    padding: 5px 0;
+    background: rgb(191, 210, 231);
 }
 
 .menu-superiore button {
@@ -1244,4 +1249,119 @@ button:last-of-type {
 
 .menu-superiore button span {
     font-size: 12px;
+}
+
+
+.rigaCampo {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0px;
+}
+
+.rigaCampo label {
+    flex: 1;
+    white-space: nowrap;
+    font-size: 16px;
+}
+
+.rigaCampo input {
+    width: 200px;
+    height: 40px;
+    flex: none;
+    margin-left: auto;
+    margin-bottom: 0px;
+}
+
+button[onclick="salvaLega()"] {
+    background-color: #66BB6A;
+}
+
+h2 {
+    color: #388E3C;
+}
+
+.checkboxBanditore {
+    transform: scale(1.8);
+    cursor: pointer;
+}
+
+/* =========================================
+   RESPONSIVE - SMARTPHONE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    .container {
+        width: 94%;
+        max-width: none;
+        margin: 10px auto;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    button {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    input,
+    select {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+}
+
+/* =========================================
+   RESPONSIVE - TABLET
+   ========================================= */
+
+@media (min-width: 601px) and (max-width: 1000px) {
+
+    body {
+        zoom: 1.5;
+    }
+
+}
+
+/* =========================================
+   CONTENITORE TABELLA SVINCOLATI
+========================================= */
+
+.contenitoreTabellaLiberi {
+
+    width: 100%;
+    max-width: 100%;
+
+    height: calc(100vh - 300px);
+    min-height: 200px;
+
+    overflow-x: auto;
+    overflow-y: auto;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   INTESTAZIONE SVINCOLATI FISSA
+========================================= */
+
+.tabellaGiocatoriLiberi tr:first-child th {
+
+    position: sticky;
+    top: 0;
+
+    z-index: 5;
+
+    background: #aaaaaa;
 }
