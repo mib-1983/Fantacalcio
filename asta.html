@@ -32,158 +32,18 @@
 <h2>Impostazioni asta</h2>
 
 
-
-<!-- ========================================= -->
-<!-- RUOLO DA CUI INIZIARE -->
-<!-- ========================================= -->
-
-<label>Ruolo da cui iniziare</label>
-
-
-<select id="ruolo">
-
-    <option value="Portieri">
-        Portieri
-    </option>
-
-    <option value="Difensori">
-        Difensori
-    </option>
-
-    <option value="Centrocampisti">
-        Centrocampisti
-    </option>
-
-    <option value="Attaccanti">
-        Attaccanti
-    </option>
-
-</select>
-
-
-
-<!-- ========================================= -->
-<!-- MODALITÀ ASTA -->
-<!-- ========================================= -->
-
-<label>Modalità asta</label>
-
-
-<div class="scelta">
-
-
-    <label>
-
-        <input
-            type="radio"
-            name="modalita"
-            value="alfabetico"
-            checked>
-
-        Ordine alfabetico
-
-    </label>
-
-
-
-    <label>
-
-        <input
-            type="radio"
-            name="modalita"
-            value="casuale">
-
-        Ordine casuale
-
-    </label>
-
-
-
-    <label>
-
-        <input
-            type="radio"
-            name="modalita"
-            value="lettera">
-
-        Alfabetico da lettera scelta
-
-    </label>
-
-
-</div>
-
-
-
-<!-- ========================================= -->
-<!-- LETTERA -->
-<!-- ========================================= -->
-
-<div
-    id="sceltaLettera"
-    style="display:none;">
-
-
-    <label>
-        Lettera iniziale
-    </label>
-
-
-    <input
-        id="lettera"
-        type="text"
-        maxlength="1"
-        placeholder="A">
-
-
-</div>
-
-
-
-<!-- ========================================= -->
-<!-- INIZIA ASTA -->
-<!-- ========================================= -->
-
-<button onclick="iniziaAsta()">
-
-    🔨 INIZIA ASTA
-
-</button>
-
-
-
-<!-- ========================================= -->
-<!-- MERCATO DI RIPARAZIONE -->
-<!-- ========================================= -->
-
 <div class="riquadroMercatoRiparazione">
 
-    
-<button onclick="mostraRiparazione()">
 
-    🔄 ASTA MERCATO DI RIPARAZIONE
-
-</button>
-
-
-
-<!-- ========================================= -->
-<!-- CARICAMENTO NUOVA LISTA -->
-<!-- ========================================= -->
-
-<div
-    id="riparazione"
-    style="display:none;">
-
-
-<label style="color: red; font-weight: bold; display: block; font-size: 12px;">
-    Seleziona il file della lista aggiornata e premi "CARICA LISTA"
+<label style="color:  #1976D2; font-weight: bold; display: block; font-size: 18px;">
+    Seleziona il file con la lista calciatori
 </label>
 
 <div style="
     display:flex;
     align-items:stretch;
     gap:10px;
+    height:40px;
 ">
 
     <!-- SINISTRA -->
@@ -213,59 +73,199 @@
             height:35px;
         ">
 
-            <label
-                for="creditiRiparazione"
-                style="
-                    font-size:13px;
-                    margin:0;
-                "
-            >
-                Inserisci i crediti da aggiungere:
-            </label>
-
-            <input
-                id="creditiRiparazione"
-                type="number"
-                min="0"
-                value="0"
-                placeholder="0"
-                style="
-                    width:60px;
-                    height:30px;
-                    padding:5px;
-                    margin:0;
-                "
-            >
-
         </div>
 
     </div>
 
+</div>
 
-    <!-- CARICA LISTA -->
-    <button
-        onclick="caricaGiocatoriRiparazione()"
+</div>
+
+
+<!-- ========================================= -->
+<!-- RUOLO DA CUI INIZIARE -->
+<!-- ========================================= -->
+
+
+<label style="color:  #1976D2; font-weight: bold; display: block; font-size: 18px;">
+    Ruolo da cui iniziare
+</label>
+
+<select id="ruolo">
+
+    <option value="Portieri">
+        Portieri
+    </option>
+
+    <option value="Difensori">
+        Difensori
+    </option>
+
+    <option value="Centrocampisti">
+        Centrocampisti
+    </option>
+
+    <option value="Attaccanti">
+        Attaccanti
+    </option>
+
+</select>
+
+
+<div class="riquadroMercatoRiparazione">
+    <!-- ========================================= -->
+    <!-- MODALITÀ ASTA -->
+    <!-- ========================================= -->
+
+    <label style="color:  #1976D2; font-weight: bold; display: block; font-size: 18px;">
+        Modalità asta
+    </label>
+
+    <div class="scelta">
+
+
+        <label>
+
+            <input
+                type="radio"
+                name="modalita"
+                value="alfabetico">
+                
+            Ordine alfabetico
+
+        </label>
+
+
+
+        <label>
+
+            <input
+                type="radio"
+                name="modalita"
+                value="casuale">
+                
+            Ordine casuale
+
+        </label>
+
+
+
+        <label>
+
+            <input
+                type="radio"
+                name="modalita"
+                value="lettera">
+
+            Alfabetico da lettera scelta
+
+        </label>
+
+
+
+
+
+
+    <!-- ========================================= -->
+    <!-- LETTERA -->
+    <!-- ========================================= -->
+
+    <div
+        id="sceltaLettera"
+        style="display:none;">
+
+
+        <label>
+            Lettera iniziale
+        </label>
+
+
+        <input
+            id="lettera"
+            type="text"
+            maxlength="1"
+            placeholder="A">
+
+
+    </div>
+
+</div>
+
+</div>
+
+ <div>
+
+
+
+<div style="
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    margin-bottom: 20px
+">
+
+    <label
+        for="creditiRiparazione"
+        style= font-weight:bold; font-size:12px>
+
+        Inserisci i crediti da aggiungere<br>per il mercato di riparazione:
+    </label>
+
+    <input
+        id="creditiRiparazione"
+        type="number"
+        min="0"
+        value="0"
+        placeholder="0"
         style="
-            width:100px;
-            height:75px;
-            margin:0;
+            width:90px;
+            height:50px;
             padding:5px;
-            font-size:14px;
+            margin:0;
+            font-size:20px;
         "
     >
-        CARICA LISTA
-    </button>
 
 </div>
 
 
+<div style="
+    display: flex;
+    gap: 50px;
+    align-items: stretch;
+    height:80px;
+    margin:0;
+    padding:5px;
+
+">
+
+<button 
+    onclick="caricaGiocatoriRiparazione()" 
+    style="
+        background-color: orange;
+        color: black;
+        font-size:15px;
+    "
+    >
+    💾 SALVA IMPOSTAZIONI ASTA
+</button>
+    
+<button 
+    id="btnIniziaAsta"
+    onclick="iniziaAsta()"
+    style="
+        background-color: #388E3C;
+        color: white;
+        font-size:20px;
+    "
+    >
+    🔨 INIZIA ASTA
+</button>
+
 </div>
-</div>
-
 
 </div>
-
-
 
 <script>
 
@@ -311,388 +311,19 @@ radio.forEach(r => {
 });
 
 
-
-// =========================================
-// CARICA IMPOSTAZIONI ASTA
-// =========================================
-
-
-function caricaImpostazioniAsta(){
-
-
-    let asta =
-        JSON.parse(
-            localStorage.getItem("asta")
-        );
-
-
-    if(!asta){
-
-        return;
-
-    }
-
-
-
-    // =====================================
-    // RUOLO
-    // =====================================
-
-    if(asta.ruolo){
-
-        document.getElementById(
-            "ruolo"
-        ).value = asta.ruolo;
-
-    }
-
-
-
-    // =====================================
-    // MODALITÀ
-    // =====================================
-
-    if(asta.modalita){
-
-        let radioModalita =
-            document.querySelector(
-                'input[name="modalita"][value="' +
-                asta.modalita +
-                '"]'
-            );
-
-
-        if(radioModalita){
-
-            radioModalita.checked = true;
-
-        }
-
-    }
-
-
-
-    // =====================================
-    // LETTERA
-    // =====================================
-
-    if(asta.modalita == "lettera"){
-
-        document.getElementById(
-            "sceltaLettera"
-        ).style.display = "block";
-
-
-        document.getElementById(
-            "lettera"
-        ).value =
-            asta.lettera || "";
-
-    }
-
-
-
-    // =====================================
-    // BLOCCO MODALITÀ
-    // =====================================
-
-    if(asta.modalitaBloccata == true){
-
-        document
-            .querySelectorAll(
-                'input[name="modalita"]'
-            )
-            .forEach(r => {
-
-                r.disabled = true;
-
-            });
-
-    }
-
-
-
-    // =====================================
-    // BLOCCO RUOLI TERMINATI
-    // =====================================
-
-    if(asta.ruoliTerminati){
-
-        asta.ruoliTerminati.forEach(
-            ruoloTerminato => {
-
-
-                let option =
-                    document.querySelector(
-                        '#ruolo option[value="' +
-                        ruoloTerminato +
-                        '"]'
-                    );
-
-
-                if(option){
-
-                    option.disabled = true;
-
-                }
-
-            }
-        );
-
-    }
-
-
-}
-
-
-
-// =========================================
-// INIZIA ASTA
-// =========================================
-
-
-function iniziaAsta(){
-
-
-    let ruolo =
-        document.getElementById(
-            "ruolo"
-        ).value;
-
-
-
-    let radioSelezionato =
-        document.querySelector(
-            'input[name="modalita"]:checked'
-        );
-
-
-    if(!radioSelezionato){
-
-        alert(
-            "Seleziona una modalità"
-        );
-
-        return;
-
-    }
-
-
-
-    let modalita =
-        radioSelezionato.value;
-
-
-
-    let lettera = "";
-
-
-
-    if(modalita == "lettera"){
-
-        lettera =
-            document.getElementById(
-                "lettera"
-            ).value
-            .toUpperCase();
-
-
-        if(!lettera){
-
-            alert(
-                "Inserisci la lettera iniziale"
-            );
-
-            return;
-
-        }
-
-    }
-
-
-
-    let asta =
-        JSON.parse(
-            localStorage.getItem("asta")
-        );
-
-
-    if(!asta){
-
-        asta = {};
-
-    }
-
-
-
-    // =====================================
-    // RUOLO
-    // =====================================
-
-    asta.ruolo = ruolo;
-
-
-
-    // =====================================
-    // MODALITÀ
-    // =====================================
-
-    if(!asta.modalita){
-
-        asta.modalita = modalita;
-
-    }
-
-
-
-    asta.lettera = lettera;
-
-
-
-    // =====================================
-    // BLOCCA MODALITÀ
-    // =====================================
-
-    asta.modalitaBloccata = true;
-
-
-
-    // =====================================
-    // RUOLI TERMINATI
-    // =====================================
-
-    if(!asta.ruoliTerminati){
-
-        asta.ruoliTerminati = [];
-
-    }
-
-
-
-    // =====================================
-    // TIPO ASTA
-    // =====================================
-
-    if(!asta.tipoAsta){
-
-        asta.tipoAsta = "iniziale";
-
-    }
-
-
-
-    // =====================================
-    // SALVA
-    // =====================================
-
-    localStorage.setItem(
-        "asta",
-        JSON.stringify(asta)
-    );
-
-
-
-    window.location.href =
-        "asta-live.html";
-
-}
-
-
-
-// =========================================
-// MOSTRA MERCATO DI RIPARAZIONE
-// =========================================
-
-
-function mostraRiparazione(){
-
-
-    document.getElementById(
-        "riparazione"
-    ).style.display = "block";
-
-
-}
-
-
-
-// =========================================
-// AVVIA MERCATO DI RIPARAZIONE
-// =========================================
-
-
-function iniziaMercatoRiparazione(){
-
-
-    let asta =
-        JSON.parse(
-            localStorage.getItem("asta")
-        );
-
-
-    if(!asta){
-
-        alert(
-            "Nessuna asta trovata"
-        );
-
-        return;
-
-    }
-
-
-
-    asta.tipoAsta =
-        "riparazione";
-
-
-    asta.modalitaBloccata =
-        false;
-
-
-    asta.ruoliTerminati =
-        [];
-
-
-    localStorage.setItem(
-        "asta",
-        JSON.stringify(asta)
-    );
-
-
-    alert(
-        "Asta di mercato di riparazione avviata"
-    );
-
-
-    location.reload();
-
-}
-
-
-
-// =========================================
-// CARICA IMPOSTAZIONI ALL'APERTURA
-// =========================================
-
-
-caricaImpostazioniAsta();
-
-
 </script>
-
-
 
 <script src="app.js"></script>
 
-
 <script>
+
+caricaImpostazioniAsta();
+
 aggiornaRuoliAsta();
+
 </script>
 
-
 <script src="menu.js"></script>
-
 
 
 </body>

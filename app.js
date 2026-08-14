@@ -108,21 +108,11 @@ function salvaLega() {
     const nomeLega =
         document.getElementById("nomeLega").value.trim();
 
-    const fileGiocatori =
-        document.getElementById("fileGiocatori").files[0];
 
 
     if (!nomeLega) {
 
         alert("Inserisci il nome della lega");
-        return;
-
-    }
-
-
-    if (!fileGiocatori) {
-
-        alert("Carica la lista giocatori Fantagazzetta");
         return;
 
     }
@@ -228,12 +218,6 @@ function salvaLega() {
         STORAGE.LEGA,
         lega
     );
-
-
-    alert(
-        "Lega creata correttamente"
-    );
-
 
     window.location.href =
         "index.html";
@@ -473,34 +457,6 @@ function leggiExcelGiocatori(file, callback) {
 }
 
 
-function caricaGiocatoriExcel() {
-
-    let file =
-        document.getElementById("fileGiocatori").files[0];
-
-
-    if (!file) {
-
-        alert("Selezionare un file Excel");
-
-        return;
-
-    }
-
-
-    leggiExcelGiocatori(file, function(giocatori) {
-
-        safeSetJSON(
-            STORAGE.GIOCATORI,
-            giocatori
-        );
-
-
-    });
-
-}
-
-
 //==================================================
 // ASTA LIVE
 //==================================================
@@ -603,19 +559,59 @@ function caricaPrimoGiocatore() {
     }
 
 
-    if (datiAsta.modalita == "lettera") {
+else if (datiAsta.modalita == "lettera") {
 
-        listaGiocatoriAsta =
-            listaGiocatoriAsta.filter(
-                g =>
-                    g.nome
+    let letteraIniziale =
+        datiAsta.lettera.toUpperCase();
+
+    let lettere =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    let indiceIniziale =
+        lettere.indexOf(letteraIniziale);
+
+    if (indiceIniziale == -1) {
+        indiceIniziale = 0;
+    }
+
+    // listaGiocatoriAsta contiene GIÀ SOLO il ruolo scelto
+
+    let giocatoriOrdinati =
+        [...listaGiocatoriAsta].sort(
+            (a, b) =>
+                a.nome.localeCompare(
+                    b.nome,
+                    "it",
+                    { sensitivity: "base" }
+                )
+        );
+
+    let listaOrdinata = [];
+
+    // Partiamo dalla lettera scelta
+    // e facciamo il giro fino a tornare alla precedente
+    for (let i = 0; i < 26; i++) {
+
+        let indiceLettera =
+            (indiceIniziale + i) % 26;
+
+        let lettera =
+            lettere[indiceLettera];
+
+        let trovati =
+            giocatoriOrdinati.filter(
+                giocatore =>
+                    giocatore.nome
                         .toUpperCase()
-                        .startsWith(
-                            datiAsta.lettera
-                        )
+                        .startsWith(lettera)
             );
 
+        listaOrdinata.push(...trovati);
     }
+
+    listaGiocatoriAsta =
+        listaOrdinata;
+}
 
 
     //=========================================
@@ -2126,6 +2122,490 @@ function caricaRose() {
 
 }
 
+
+function caricaGiocatoriExcel() {
+
+    let file =
+        document.getElementById("fileGiocatori").files[0];
+
+
+    if (!file) {
+
+        alert("Selezionare un file Excel");
+
+        return;
+
+    }
+
+
+    leggiExcelGiocatori(file, function(giocatori) {
+
+        safeSetJSON(
+            STORAGE.GIOCATORI,
+            giocatori
+        );
+
+
+    });
+
+}
+
+function caricaGiocatoriRiparazione() {
+
+    // =========================================
+    // PRENDE IL FILE
+    // =========================================
+
+    let file =
+        document.getElementById(
+            "fileRiparazione"
+        ).files[0];
+
+
+    if (!file) {
+
+        alert(
+            "Selezionare un file Excel"
+        );
+
+        return;
+
+    }
+
+
+    // =========================================
+    // CARICA LA LEGA
+    // =========================================
+
+    let lega =
+        safeGetJSON(
+            STORAGE.LEGA
+        );
+
+
+    if (!lega) {
+
+        alert(
+            "Nessuna lega trovata"
+        );
+
+        return;
+
+    }
+
+
+    // =========================================
+    // CARICA ASTA
+    // =========================================
+
+    let asta =
+        safeGetJSON(
+            STORAGE.ASTA
+        );
+
+
+    if (!asta) {
+
+        asta = {};
+
+    }
+
+
+    // =========================================
+    // CAPISCE SE È PRIMA ASTA O RIPARAZIONE
+    // =========================================
+
+    let astaRiparazione =
+        lega.partecipanti.some(
+            squadra =>
+                squadra.rosa &&
+                squadra.rosa.length > 0
+        );
+
+
+    // =========================================
+    // LEGGE IL FILE EXCEL
+    // =========================================
+
+    leggiExcelGiocatori(
+        file,
+        function(giocatori) {
+
+
+            // =====================================
+            // PRIMA ASTA
+            // =====================================
+
+            if (!astaRiparazione) {
+
+                // Salva tutta la lista
+                safeSetJSON(
+                    STORAGE.GIOCATORI,
+                    giocatori
+                );
+
+
+                // Imposta asta iniziale
+                asta.tipoAsta =
+                    "iniziale";
+
+
+                asta.ruoliTerminati =
+                    [];
+
+
+                asta.modalitaBloccata =
+                    false;
+
+
+                asta.ruolo =
+                    "Portieri";
+
+
+                safeSetJSON(
+                    STORAGE.ASTA,
+                    asta
+                );
+
+
+                // Riabilita modalità asta
+                document
+                    .querySelectorAll(
+                        'input[name="modalita"]'
+                    )
+                    .forEach(
+                        radio => {
+
+                            radio.disabled =
+                                false;
+
+                        }
+                    );
+
+
+                // Riabilita ruoli
+                let selectRuolo =
+                    document.getElementById(
+                        "ruolo"
+                    );
+
+
+                if (selectRuolo) {
+
+                    selectRuolo.value =
+                        "Portieri";
+
+
+                    Array.from(
+                        selectRuolo.options
+                    ).forEach(
+                        opzione => {
+
+                            opzione.disabled =
+                                false;
+
+                            opzione.textContent =
+                                opzione.value;
+
+                        }
+                    );
+
+                }
+
+
+                // Mostra INIZIA ASTA
+                let btnIniziaAsta =
+                    document.getElementById(
+                        "btnIniziaAsta"
+                    );
+
+
+                if (btnIniziaAsta) {
+
+                    btnIniziaAsta.style.display =
+                        "block";
+
+                }
+
+
+                alert(
+
+                    "Lista caricata.\n\n" +
+
+                    "Giocatori presenti nel file: " +
+                    giocatori.length
+
+                );
+
+
+                return;
+
+            }
+
+
+            // =====================================
+            // MERCATO DI RIPARAZIONE
+            // =====================================
+
+            let creditiAggiunti =
+                Number(
+                    document.getElementById(
+                        "creditiRiparazione"
+                    ).value
+                ) || 0;
+
+
+            // =====================================
+            // AGGIUNGE I CREDITI
+            // =====================================
+
+            if (creditiAggiunti > 0) {
+
+                lega.partecipanti.forEach(
+                    squadra => {
+
+                        squadra.crediti +=
+                            creditiAggiunti;
+
+                    }
+                );
+
+            }
+
+
+            // =====================================
+            // CONTROLLA I GIOCATORI GIÀ IN ROSA
+            // =====================================
+
+            lega.partecipanti.forEach(
+                squadra => {
+
+                    if (!squadra.rosa) {
+
+                        return;
+
+                    }
+
+
+                    squadra.rosa.forEach(
+                        giocatoreRosa => {
+
+                            let presente =
+                                giocatori.some(
+                                    giocatoreNuovo =>
+
+                                        giocatoreNuovo.nome ==
+                                        giocatoreRosa.nome &&
+
+                                        giocatoreNuovo.squadra ==
+                                        giocatoreRosa.squadra
+                                );
+
+
+                            if (presente) {
+
+                                giocatoreRosa.fuoriLista =
+                                    false;
+
+                            }
+                            else {
+
+                                giocatoreRosa.fuoriLista =
+                                    true;
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+            // =====================================
+            // SALVA LA LEGA
+            // =====================================
+
+            safeSetJSON(
+                STORAGE.LEGA,
+                lega
+            );
+
+
+            aggiornaLegaSalvata(
+                lega
+            );
+
+
+            // =====================================
+            // ESCLUDE I GIOCATORI GIÀ IN ROSA
+            // =====================================
+
+            let giocatoriDisponibili =
+                giocatori.filter(
+                    giocatore => {
+
+                        let giaAcquistato =
+                            lega.partecipanti.some(
+                                squadra => {
+
+                                    if (!squadra.rosa) {
+
+                                        return false;
+
+                                    }
+
+
+                                    return squadra.rosa.some(
+                                        giocatoreRosa =>
+
+                                            giocatoreRosa.nome ==
+                                            giocatore.nome &&
+
+                                            giocatoreRosa.squadra ==
+                                            giocatore.squadra
+                                    );
+
+                                }
+                            );
+
+
+                        return !giaAcquistato;
+
+                    }
+                );
+
+
+            // =====================================
+            // SALVA NUOVA LISTA
+            // =====================================
+
+            safeSetJSON(
+                STORAGE.GIOCATORI,
+                giocatoriDisponibili
+            );
+
+
+            // =====================================
+            // AZZERA ASTA PRECEDENTE
+            // =====================================
+
+            asta.tipoAsta =
+                "riparazione";
+
+
+            asta.modalitaBloccata =
+                false;
+
+
+            asta.ruoliTerminati =
+                [];
+
+
+            asta.ruolo =
+                "Portieri";
+
+
+            safeSetJSON(
+                STORAGE.ASTA,
+                asta
+            );
+
+
+            // =====================================
+            // RIABILITA MODALITÀ ASTA
+            // =====================================
+
+            document
+                .querySelectorAll(
+                    'input[name="modalita"]'
+                )
+                .forEach(
+                    radio => {
+
+                        radio.disabled =
+                            false;
+
+                    }
+                );
+
+
+            // =====================================
+            // AGGIORNA SELECT RUOLO
+            // =====================================
+
+            let selectRuolo =
+                document.getElementById(
+                    "ruolo"
+                );
+
+
+            if (selectRuolo) {
+
+                selectRuolo.value =
+                    "Portieri";
+
+
+                Array.from(
+                    selectRuolo.options
+                ).forEach(
+                    opzione => {
+
+                        opzione.disabled =
+                            false;
+
+                        opzione.textContent =
+                            opzione.value;
+
+                    }
+                );
+
+            }
+
+
+            // =====================================
+            // MOSTRA INIZIA ASTA
+            // =====================================
+
+            let btnIniziaAsta =
+                document.getElementById(
+                    "btnIniziaAsta"
+                );
+
+
+            if (btnIniziaAsta) {
+
+                btnIniziaAsta.style.display =
+                    "block";
+
+            }
+
+
+            // =====================================
+            // RISULTATO
+            // =====================================
+
+            alert(
+
+                "Lista di riparazione caricata.\n\n" +
+
+                "Giocatori presenti nel file: " +
+                giocatori.length +
+
+                "\nGiocatori disponibili: " +
+                giocatoriDisponibili.length +
+
+                "\nCrediti aggiunti a ogni squadra: " +
+                creditiAggiunti
+
+            );
+
+        }
+    );
+
+}
+
+
 //==================================================
 // GIOCATORI LIBERI
 //==================================================
@@ -3023,14 +3503,18 @@ function iniziaMercatoRiparazione() {
 
 
 //==================================================
-// CARICAMENTO GIOCATORI RIPARAZIONE
+// CARICAMENTO GIOCATORI
 //==================================================
 
-function caricaGiocatoriRiparazione() {
+function caricaLista() {
+
+    // =========================================
+    // PRENDE IL FILE
+    // =========================================
 
     let file =
         document.getElementById(
-            "fileRiparazione"
+            "fileGiocatori"
         ).files[0];
 
 
@@ -3044,6 +3528,10 @@ function caricaGiocatoriRiparazione() {
 
     }
 
+
+    // =========================================
+    // CARICA LA LEGA
+    // =========================================
 
     let lega =
         safeGetJSON(
@@ -3062,233 +3550,376 @@ function caricaGiocatoriRiparazione() {
     }
 
 
-    //=========================================
-    // AGGIUNGE I CREDITI DEL MERCATO DI RIPARAZIONE
-    //=========================================
+    // =========================================
+    // CONTROLLA SE SIAMO IN RIPARAZIONE
+    // =========================================
 
-    let creditiAggiunti =
-        Number(
-            document.getElementById(
-                "creditiRiparazione"
-            ).value
-        ) || 0;
-
-
-    if (creditiAggiunti > 0) {
-
-        lega.partecipanti.forEach(
-            squadra => {
-
-                squadra.crediti +=
-                    creditiAggiunti;
-
-            }
+    let asta =
+        safeGetJSON(
+            STORAGE.ASTA
         );
+
+
+    if (!asta) {
+
+        asta = {};
 
     }
 
 
-    leggiExcelGiocatori(file, function(giocatori) {
+    /*
+       Se almeno un giocatore è già presente
+       in una rosa, significa che l'asta iniziale
+       è già stata effettuata.
 
-        //=========================================
-        // CONTROLLA I GIOCATORI GIÀ IN ROSA
-        //=========================================
+       In questo caso il nuovo caricamento
+       viene considerato MERCATO DI RIPARAZIONE.
+    */
 
-        lega.partecipanti.forEach(
-            squadra => {
+    let astaRiparazione =
 
-                squadra.rosa.forEach(
-                    giocatoreRosa => {
+        lega.partecipanti.some(
+            squadra =>
 
-                        let presente =
-                            giocatori.some(
-                                giocatoreNuovo =>
+                squadra.rosa &&
+                squadra.rosa.length > 0
 
-                                    giocatoreNuovo.nome ==
-                                    giocatoreRosa.nome &&
-
-                                    giocatoreNuovo.squadra ==
-                                    giocatoreRosa.squadra
-
-                            );
+        );
 
 
-                        if (presente) {
+    // =========================================
+    // LEGGE IL FILE EXCEL
+    // =========================================
 
-                            giocatoreRosa.fuoriLista =
-                                false;
+    leggiExcelGiocatori(
+        file,
+        function(giocatori) {
 
-                        }
-                        else {
 
-                            giocatoreRosa.fuoriLista =
-                                true;
+            // =====================================
+            // PRIMA ASTA
+            // =====================================
 
-                        }
+            if (!astaRiparazione) {
+
+                safeSetJSON(
+                    STORAGE.GIOCATORI,
+                    giocatori
+                );
+
+
+                asta.tipoAsta =
+                    "iniziale";
+
+
+                safeSetJSON(
+                    STORAGE.ASTA,
+                    asta
+                );
+
+
+                alert(
+
+                    "Lista caricata.\n\n" +
+
+                    "Giocatori presenti nel file: " +
+                    giocatori.length
+
+                );
+
+
+                return;
+
+            }
+
+
+
+            // =====================================
+            // MERCATO DI RIPARAZIONE
+            // =====================================
+
+
+            // =====================================
+            // AGGIUNGE I CREDITI
+            // =====================================
+
+            let campoCrediti =
+                document.getElementById(
+                    "creditiRiparazione"
+                );
+
+
+            let creditiAggiunti = 0;
+
+
+            if (campoCrediti) {
+
+                creditiAggiunti =
+                    Number(
+                        campoCrediti.value
+                    ) || 0;
+
+            }
+
+
+            if (creditiAggiunti > 0) {
+
+                lega.partecipanti.forEach(
+                    squadra => {
+
+                        squadra.crediti +=
+                            creditiAggiunti;
 
                     }
                 );
 
             }
-        );
 
 
-        safeSetJSON(
-            STORAGE.LEGA,
-            lega
-        );
+
+            // =====================================
+            // CONTROLLA I GIOCATORI GIÀ IN ROSA
+            // =====================================
+
+            lega.partecipanti.forEach(
+                squadra => {
+
+                    if (!squadra.rosa) {
+                        return;
+                    }
 
 
-        // Senza questo i crediti aggiunti e i flag
-        // fuoriLista si perdono rientrando dal login
-        aggiornaLegaSalvata(lega);
+                    squadra.rosa.forEach(
+                        giocatoreRosa => {
 
 
-        //=========================================
-        // ESCLUDE I GIOCATORI GIÀ IN ROSA
-        //=========================================
+                            let presente =
+                                giocatori.some(
+                                    giocatoreNuovo =>
 
-        let giocatoriDisponibili =
-            giocatori.filter(
-                giocatore => {
+                                        giocatoreNuovo.nome ==
+                                        giocatoreRosa.nome &&
 
-                    let giaAcquistato =
-                        lega.partecipanti.some(
-                            squadra => {
-
-                                return squadra.rosa.some(
-                                    giocatoreRosa =>
-
-                                        giocatoreRosa.nome ==
-                                        giocatore.nome &&
-
-                                        giocatoreRosa.squadra ==
-                                        giocatore.squadra
+                                        giocatoreNuovo.squadra ==
+                                        giocatoreRosa.squadra
 
                                 );
 
+
+                            if (presente) {
+
+                                giocatoreRosa.fuoriLista =
+                                    false;
+
                             }
-                        );
+                            else {
 
+                                giocatoreRosa.fuoriLista =
+                                    true;
 
-                    return !giaAcquistato;
+                            }
+
+                        }
+                    );
 
                 }
             );
 
 
-        //=========================================
-        // SALVA NUOVA LISTA
-        //=========================================
 
-        safeSetJSON(
-            STORAGE.GIOCATORI,
-            giocatoriDisponibili
-        );
+            // =====================================
+            // SALVA LA LEGA
+            // =====================================
 
-
-        //=========================================
-        // AZZERA ASTA PRECEDENTE
-        //=========================================
-
-        let asta =
-            safeGetJSON(
-                STORAGE.ASTA
+            safeSetJSON(
+                STORAGE.LEGA,
+                lega
             );
 
 
-        if (!asta) {
+            /*
+               Senza questo i crediti aggiunti
+               e i flag fuoriLista si perdono
+               rientrando dal login.
+            */
 
-            asta = {};
-
-        }
-
-
-        asta.tipoAsta =
-            "riparazione";
-
-        asta.modalitaBloccata =
-            false;
-
-        asta.ruoliTerminati =
-            [];
-
-        asta.ruolo =
-            "Portieri";
-
-
-        safeSetJSON(
-            STORAGE.ASTA,
-            asta
-        );
-
-
-        //=========================================
-        // AGGIORNA PAGINA
-        //=========================================
-
-        let selectRuolo =
-            document.getElementById(
-                "ruolo"
+            aggiornaLegaSalvata(
+                lega
             );
 
 
-        if (selectRuolo) {
 
-            selectRuolo.value =
+            // =====================================
+            // ESCLUDE I GIOCATORI GIÀ IN ROSA
+            // =====================================
+
+            let giocatoriDisponibili =
+
+                giocatori.filter(
+                    giocatore => {
+
+
+                        let giaAcquistato =
+
+                            lega.partecipanti.some(
+                                squadra => {
+
+
+                                    if (!squadra.rosa) {
+                                        return false;
+                                    }
+
+
+                                    return squadra.rosa.some(
+                                        giocatoreRosa =>
+
+                                            giocatoreRosa.nome ==
+                                            giocatore.nome &&
+
+                                            giocatoreRosa.squadra ==
+                                            giocatore.squadra
+
+                                    );
+
+                                }
+                            );
+
+
+                        return !giaAcquistato;
+
+                    }
+                );
+
+
+
+            // =====================================
+            // SALVA LA NUOVA LISTA
+            // =====================================
+
+            safeSetJSON(
+                STORAGE.GIOCATORI,
+                giocatoriDisponibili
+            );
+
+
+
+            // =====================================
+            // AZZERA ASTA PRECEDENTE
+            // =====================================
+
+            asta.tipoAsta =
+                "riparazione";
+
+
+            asta.modalitaBloccata =
+                false;
+
+
+            asta.ruoliTerminati =
+                [];
+
+
+            asta.ruolo =
                 "Portieri";
 
 
-            Array.from(
-                selectRuolo.options
-            ).forEach(
-                opzione => {
 
-                    opzione.disabled =
-                        false;
+            safeSetJSON(
+                STORAGE.ASTA,
+                asta
+            );
 
-                    opzione.textContent =
-                        opzione.value;
 
-                }
+
+            // =====================================
+            // AGGIORNA IL SELECT DEI RUOLI
+            // =====================================
+
+            let selectRuolo =
+                document.getElementById(
+                    "ruolo"
+                );
+
+
+            if (selectRuolo) {
+
+                selectRuolo.value =
+                    "Portieri";
+
+
+                Array.from(
+                    selectRuolo.options
+                ).forEach(
+                    opzione => {
+
+                        opzione.disabled =
+                            false;
+
+                        opzione.textContent =
+                            opzione.value;
+
+                    }
+                );
+
+            }
+
+
+
+            // =====================================
+            // RISULTATO
+            // =====================================
+
+            alert(
+
+                "Lista di riparazione caricata.\n\n" +
+
+                "Giocatori presenti nel file: " +
+                giocatori.length +
+
+                "\nGiocatori disponibili: " +
+                giocatoriDisponibili.length +
+
+                "\nCrediti aggiunti a ogni squadra: " +
+                creditiAggiunti
+
             );
 
         }
-
-
-        alert(
-
-            "Lista caricata.\n\n" +
-
-            "Giocatori presenti nel file: " +
-            giocatori.length +
-
-            "\nGiocatori disponibili: " +
-            giocatoriDisponibili.length
-
-        );
-
-    });
+    );
 
 }
 
-
 //==================================================
-// INIZIO ASTA
+// INIZIA ASTA
 //==================================================
 
 function iniziaAsta() {
-
+    
     let ruolo =
         document.getElementById(
             "ruolo"
         ).value;
 
 
-    let modalita =
+    let radioSelezionato =
         document.querySelector(
             'input[name="modalita"]:checked'
-        ).value;
+        );
+
+
+    if (!radioSelezionato) {
+
+        alert(
+            "Seleziona una modalità"
+        );
+
+        return;
+
+    }
+
+
+    let modalita =
+        radioSelezionato.value;
 
 
     let lettera = "";
@@ -3302,19 +3933,16 @@ function iniziaAsta() {
             ).value
             .toUpperCase();
 
-    }
 
+        if (lettera == "") {
 
-    if (
-        modalita == "lettera" &&
-        lettera == ""
-    ) {
+            alert(
+                "Inserire la lettera iniziale"
+            );
 
-        alert(
-            "Inserire la lettera iniziale"
-        );
+            return;
 
-        return;
+        }
 
     }
 
@@ -3323,6 +3951,7 @@ function iniziaAsta() {
         safeGetJSON(
             STORAGE.ASTA
         );
+
 
 
     if (!asta) {
@@ -3343,11 +3972,14 @@ function iniziaAsta() {
     asta.ruolo =
         ruolo;
 
+
     asta.modalita =
         modalita;
 
+
     asta.lettera =
         lettera;
+
 
     asta.modalitaBloccata =
         true;
@@ -4833,26 +5465,6 @@ function selezionaGiocatoreLibero(nome, squadraReale) {
 }
 
 
-function mostraRiparazione() {
-
-    let riparazione =
-        document.getElementById("riparazione");
-
-    if (!riparazione) {
-        return;
-    }
-
-    if (riparazione.style.display === "none") {
-
-        riparazione.style.display = "block";
-
-    } else {
-
-        riparazione.style.display = "none";
-
-    }
-
-}
 
 function attivaModalitaSvincolo() {
 
@@ -5242,3 +5854,138 @@ function apriTutteLeRose() {
     location.href =
         "rose.html";
 }
+
+
+// =========================================
+// CARICA IMPOSTAZIONI ASTA
+// =========================================
+
+
+function caricaImpostazioniAsta(){
+
+
+    let asta =
+        JSON.parse(
+            localStorage.getItem("asta")
+        );
+
+
+    if(!asta){
+
+        return;
+
+    }
+
+
+
+    // =====================================
+    // RUOLO
+    // =====================================
+
+    if(asta.ruolo){
+
+        document.getElementById(
+            "ruolo"
+        ).value = asta.ruolo;
+
+    }
+
+
+
+    // =====================================
+    // MODALITÀ
+    // =====================================
+
+    if(asta.modalita){
+
+        let radioModalita =
+            document.querySelector(
+                'input[name="modalita"][value="' +
+                asta.modalita +
+                '"]'
+            );
+
+
+        if(radioModalita){
+
+            radioModalita.checked = true;
+
+        }
+
+    }
+
+
+
+    // =====================================
+    // LETTERA
+    // =====================================
+
+    if(asta.modalita == "lettera"){
+
+        document.getElementById(
+            "sceltaLettera"
+        ).style.display = "block";
+
+
+        document.getElementById(
+            "lettera"
+        ).value =
+            asta.lettera || "";
+
+    }
+
+
+
+    // =====================================
+    // BLOCCO MODALITÀ
+    // =====================================
+
+    if(asta.modalitaBloccata == true){
+
+        document
+            .querySelectorAll(
+                'input[name="modalita"]'
+            )
+            .forEach(r => {
+
+                r.disabled = true;
+
+            });
+
+    }
+
+
+
+    // =====================================
+    // BLOCCO RUOLI TERMINATI
+    // =====================================
+
+    if(asta.ruoliTerminati){
+
+        asta.ruoliTerminati.forEach(
+            ruoloTerminato => {
+
+
+                let option =
+                    document.querySelector(
+                        '#ruolo option[value="' +
+                        ruoloTerminato +
+                        '"]'
+                    );
+
+
+                if(option){
+
+                    option.disabled = true;
+
+                }
+
+            }
+        );
+
+    }
+
+
+}
+
+
