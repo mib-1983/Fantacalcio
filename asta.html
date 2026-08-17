@@ -311,9 +311,50 @@ radio.forEach(r => {
 });
 
 
+document
+    .getElementById("fileRiparazione")
+    .addEventListener("click", function () {
+
+        // Sblocca modalità asta
+        document
+            .querySelectorAll('input[name="modalita"]')
+            .forEach(radio => {
+
+                radio.disabled = false;
+
+            });
+
+
+        // Sblocca la lettera
+        const lettera =
+            document.getElementById("lettera");
+
+        if (lettera) {
+
+            lettera.disabled = false;
+
+        }
+
+
+        // Sblocca il ruolo
+        const ruolo =
+            document.getElementById("ruolo");
+
+        if (ruolo) {
+
+            ruolo.disabled = false;
+
+        }
+
+    });
+
 </script>
 
+
+
 <script src="app.js"></script>
+
+
 
 <script>
 

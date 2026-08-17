@@ -36,16 +36,45 @@
 
     <p id="crediti"></p>
 
-    <h2>👥 Partecipanti</h2>
+<div style="
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:10px;
+">
+
+    <h2 style="margin:0;">
+        👥 Partecipanti
+    </h2>
+
+    <button
+        type="button"
+        onclick="esportaRose()"
+        style="
+            padding:4px 8px;
+            background:#7489e4;
+            color:white;
+            border:none;
+            border-radius:6px;
+            font-size:11px;
+            cursor:pointer;
+            width: 100px;
+        "
+    >
+        📤 ESPORTA ROSE
+    </button>
+
+</div>
+
+<div id="listaUtenti"></div>
 
 
     <div id="listaUtenti"></div>
 
 
-
-
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script src="app.js"></script>
 
@@ -58,6 +87,8 @@
 
 
 <script src="menu.js"></script>
+
+
 
 
 </body>
