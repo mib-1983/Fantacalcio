@@ -1291,6 +1291,64 @@ h2 {
 
 }
 
+@media (max-width: 600px) {
+
+    /* TABELLA ROSE - ADATTAMENTO SMARTPHONE */
+
+    .contenitoreTabellaRose {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+
+    .tabellaRose {
+        width: 100%;
+        min-width: 100%;
+        table-layout: fixed;
+        box-sizing: border-box;
+    }
+
+    .tabellaRose th,
+    .tabellaRose td {
+        padding: 5px 3px;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
+
+    /* Larghezza colonne */
+    .tabellaRose .colRuolo {
+        width: 12%;
+    }
+
+    .tabellaRose .colNome {
+        width: 43%;
+    }
+
+    .tabellaRose .colSquadra {
+        width: 25%;
+    }
+
+    .tabellaRose .colCosto {
+        width: 20%;
+    }
+
+    /* Evita che il nome allarghi la tabella */
+    .tabellaRose .nomeGiocatore {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tabellaRose th {
+        font-size: 12px;
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+}
+
 /* =========================================
    CONTENITORE TABELLA SVINCOLATI
 ========================================= */
